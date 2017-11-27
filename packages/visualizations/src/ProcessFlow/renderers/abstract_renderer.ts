@@ -2,8 +2,8 @@ import { map } from "lodash/fp"
 import * as d3 from "d3-selection"
 import { scaleLinear as d3ScaleLinear } from "d3-scale"
 import Node from "../node"
-import { IFocusElement } from "../typings"
-import { every, invoke } from "lodash/fp"
+import { IFocusElement, TD3Selection } from "../typings"
+import { every, forEach, invoke, reduce } from "lodash/fp"
 import { withD3Element } from "../../utils/d3_utils"
 
 import {
@@ -42,29 +42,55 @@ abstract class AbstractRenderer {
     this.mouseOver(d3.select(element), d)
   }
 
-  mouseOver(element: TElementSelection, d: TLink | TNode): void {
+  mouseOver(element: TElementSelection, d: TLink | TNode, hideLabel: boolean = false): void {
     this.highlight(element, d)
     let focusPoint: IFocus = this.focusPoint(element, d)
-    this.events.emit(Events.FOCUS.ELEMENT.HOVER, { focusPoint, d })
+    this.events.emit(Events.FOCUS.ELEMENT.HOVER, { focusPoint, d, hideLabel })
     element.classed("hover", true).on("mouseleave", withD3Element(this.onMouseOut.bind(this)))
   }
 
-  focusElement(elementInfo: IFocusElement): void {
-    if (elementInfo.type !== this.type) { return }
+  focusElement(focusElement: IFocusElement): void {
+    if (focusElement.type === "path") {
+      this.highlightPath(focusElement)
+      return
+    }
+    if (focusElement.type !== this.type) { return }
     this.el
       .selectAll(this.focusElementAccessor)
       .filter((d: TLink | TNode): boolean => {
         return every.convert({ cap: false })((value: any, matcher: string): boolean => {
           return invoke(matcher)(d) === value
-        })(elementInfo.matchers)
+        })(focusElement.matchers)
       })
       .each(withD3Element((d: TLink | TNode, el: HTMLElement): void => {
-        this.mouseOver(d3.select(el), d)
+        this.mouseOver(d3.select(el), d, focusElement.hideLabel)
       }))
   }
 
-  highlight(element: TElementSelection, d: TLink | TNode): void {
-    this.removeHighlights()
+  highlightPath(focusElement: IFocusElement): void {
+    if (this.type !== "link") { return }
+    this.events.emit(Events.FOCUS.ELEMENT.OUT)
+
+    const links: [string, string][] = reduce.convert({ cap: false })((memo: [string, string][], nodeId: string, i: number): [string, string][] => {
+      if (!focusElement.matchers.path[i + 1]) { return memo }
+      memo.push([nodeId, focusElement.matchers.path[i + 1]])
+      return memo
+    }, [])(focusElement.matchers.path)
+
+    forEach((link: [string, string]): void => {
+      this.el
+        .selectAll(this.focusElementAccessor)
+        .filter((d: TLink): boolean => {
+          return d.sourceId() === link[0] && d.targetId() === link[1]
+        })
+        .each(withD3Element((d: TLink, el: HTMLElement): void => {
+          this.highlight(d3.select(el), d, true)
+        }))
+    })(links)
+  }
+
+  highlight(element: TElementSelection, d: TLink | TNode, keepCurrent: boolean = false): void {
+    if (!keepCurrent) { this.removeHighlights() }
     element
       .classed("highlighted", true)
       .attr("stroke", this.config.highlightColor)

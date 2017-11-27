@@ -17,7 +17,7 @@ abstract class Focus {
     this.events.on(Events.CHART.OUT, this.onMouseLeave.bind(this))
   }
 
-  abstract onElementHover(payload: { focusPoint: any; d: any }): void
+  abstract onElementHover(payload: { focusPoint: any; d: any, hideLabel: boolean }): void
 
   onElementOut(): void {
     this.remove()
