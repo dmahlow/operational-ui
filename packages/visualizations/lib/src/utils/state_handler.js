@@ -44,6 +44,7 @@ var StateHandler = /** @class */ (function () {
     // Computed
     StateHandler.prototype.computedWriter = function (namespace) {
         var _this = this;
+        this.state.current.set(["computed"].concat(namespace), {});
         return function (path, value) {
             _this.state.current.set(["computed"].concat(namespace).concat(path), value);
         };

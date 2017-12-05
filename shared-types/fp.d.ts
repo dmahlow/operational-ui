@@ -19,8 +19,8 @@ declare namespace fp {
   }
 
   interface Static {
-    find<T>(predicate: ListIterator<T, boolean>): (collection: List<T>) => T
-    find<TObject extends {}, T>(predicate: TObject): (collection: List<T>) => T
+    // find<T>(predicate: ListIterator<T, boolean>): (collection: List<T>) => T
+    // find<TObject extends {}, T>(predicate: TObject): (collection: List<T>) => T
 
     /**
      * Creates an object composed of keys generated from the results of running each element of collection through
@@ -148,32 +148,40 @@ declare namespace fp {
      */
     isEmpty(value?: any): boolean
 
-    bind: any
-    forEach: any
-    times: any
-    extend: any
-    uniqueId: any
-    indexOf: any
-    uniq: any
-    invoke: any
-    isMatch: any
-    isDate: any
-    isFinite: any
-    pluck: any
-    compact: any
-    flatten: any
-    size: any
     all: any
     any: any
-    isObject: any
-    last: any
+    bind: any
+    compact: any
+    concat: any
+    defaults: any
     drop: any
     dropRight: any
     every: any
-    merge: any
+    extend: any
+    filter: any
+    find: any
+    findIndex: any
+    flatten: any
+    forEach: any
     get: any
     identity: any
-    filter: any
+    indexOf: any
+    invoke: any
+    isDate: any
+    isFinite: any
+    isMatch: any
+    isObject: any
+    isString: any
+    isUndefined: any
+    last: any
+    merge: any
+    pluck: any
+    result: any
+    size: any
+    some: any
+    times: any
+    uniq: any
+    uniqueId: any
   }
 }
 

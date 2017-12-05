@@ -5,7 +5,6 @@ var d3 = require("d3-selection");
 var styles = require("../styles/styles");
 var Canvas = /** @class */ (function () {
     function Canvas(state, stateWriter, events, context) {
-        this.elements = {};
         this.elMap = {};
         this.state = state;
         this.stateWriter = stateWriter;
@@ -65,7 +64,6 @@ var Canvas = /** @class */ (function () {
             el.node().removeEventListener("mouseleave", this.onMouseLeave.bind(this));
             el.node().removeEventListener("click", this.onClick.bind(this));
         }
-        this.elements = {};
         this.container.remove();
         this.container = undefined;
         this.el = undefined;

@@ -8,7 +8,6 @@ abstract class Canvas {
   container: TD3Selection
   el: TSeriesEl
   events: IEvents
-  protected elements: IObject = {}
   protected state: IState
   protected elMap: IObject = {}
   stateWriter: TStateWriter
@@ -87,7 +86,6 @@ abstract class Canvas {
       el.node().removeEventListener("mouseleave", this.onMouseLeave.bind(this))
       el.node().removeEventListener("click", this.onClick.bind(this))
     }
-    this.elements = {}
     this.container.remove()
     this.container = undefined
     this.el = undefined

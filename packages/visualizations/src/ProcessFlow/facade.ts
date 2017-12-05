@@ -30,7 +30,7 @@ class Facade {
       data: {},
       config: this.initialConfig(),
       accessors: this.initialAccessors(),
-      computed: this.initialComputed(),
+      computed: {},
     })
   }
 
@@ -83,14 +83,6 @@ class Facade {
         target: (d: ILinkAttrs): TNode | undefined => d.target,
         targetId: (d: ILinkAttrs): string | undefined => d.targetId,
       },
-    }
-  }
-
-  initialComputed(): IComputedState {
-     return {
-      canvas: {},
-      focus: {},
-      series: {},
     }
   }
 

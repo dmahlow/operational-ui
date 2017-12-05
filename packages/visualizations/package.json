@@ -7,6 +7,7 @@
   "author": "Imogen Mason <imogen@contiamo.com>",
   "license": "MIT",
   "scripts": {
+    "dev": "node scripts/dev-server/index.js",
     "test": "jest",
     "package": "rm -rf lib && tsc",
     "package:watch": "rm -rf lib && tsc -w",
@@ -17,8 +18,11 @@
     "precommit": "npm run test && npm run lint && npm run prettier && npm run package && git add ."
   },
   "dependencies": {
+    "@types/d3-array": "^1.2.1",
+    "@types/d3-time-format": "^2.1.0",
     "d3": "^4.10.2",
     "glamorous": "^4.8.0",
+    "jest": "^21.2.1",
     "jquery": "^3.2.1",
     "lodash": "^4.17.4",
     "react": "^16.0.0"

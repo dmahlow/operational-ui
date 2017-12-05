@@ -59,6 +59,7 @@ class StateHandler<IConfig> {
 
   // Computed
   computedWriter(namespace: TPath): TStateWriter {
+    this.state.current.set(["computed"].concat(namespace), {})
     return (path: TPath, value: any): void => {
       this.state.current.set(["computed"].concat(namespace).concat(path), value)
     }

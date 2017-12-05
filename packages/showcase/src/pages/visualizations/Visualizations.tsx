@@ -7,6 +7,8 @@ import PageContent from "../../components/PageContent/PageContent"
 import Sidebar, { ISidebarLink } from "../../components/Sidebar/Sidebar"
 import StaticContent from "../../components/StaticContent/StaticContent"
 
+import BarChartMain from "./BarCharts/BarChartMain"
+
 import ProcessFlowMain from "./ProcessFlows/ProcessFlowMain"
 import { ProcessFlowCases } from "./ProcessFlows/ProcessFlows"
 import * as processFlowCases from "./ProcessFlows/cases/index"
@@ -26,6 +28,10 @@ const Intro = () => (
 
 const links: ISidebarLink[] = [
   {
+    label: "Bar chart",
+    links: [{ label: "Main", url: "/visualizations/bar-chart/main" }]
+  },
+  {
     label: "Process Flow",
     links: [{ label: "Main", url: "/visualizations/process-flow/main" }].concat(
       Object.keys(processFlowCases).map((key, i) => {
@@ -35,10 +41,6 @@ const links: ISidebarLink[] = [
         }
       })
     )
-  },
-  {
-    label: "Bar chart",
-    links: []
   }
 ]
 
@@ -47,6 +49,7 @@ export default () => (
     <SidebarWithRouter links={links} />
     <Canvas>
       <Route exact path="/visualizations" component={Intro} />
+      <Route exact path="/visualizations/bar-chart/main" component={BarChartMain} />
       <Route exact path="/visualizations/process-flow/main" component={ProcessFlowMain} />
       <Route path="/visualizations/process-flow/cases/:case" component={ProcessFlowCases} />
     </Canvas>

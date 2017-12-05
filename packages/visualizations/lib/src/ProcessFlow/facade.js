@@ -22,7 +22,7 @@ var Facade = /** @class */ (function () {
             data: {},
             config: this.initialConfig(),
             accessors: this.initialAccessors(),
-            computed: this.initialComputed(),
+            computed: {},
         });
     };
     Facade.prototype.initialConfig = function () {
@@ -73,13 +73,6 @@ var Facade = /** @class */ (function () {
                 target: function (d) { return d.target; },
                 targetId: function (d) { return d.targetId; },
             },
-        };
-    };
-    Facade.prototype.initialComputed = function () {
-        return {
-            canvas: {},
-            focus: {},
-            series: {},
         };
     };
     Facade.prototype.insertCanvas = function () {
