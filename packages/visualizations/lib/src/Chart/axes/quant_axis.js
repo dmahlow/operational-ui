@@ -111,11 +111,10 @@ var QuantAxis = /** @class */ (function (_super) {
     // Aligns Zeros if both domains have zeros otherwise aligns number of ticks
     // Expects steps to be an array of [start, stop, step]
     QuantAxis.alignSteps = function (one, two) {
-        var containsZero = function (step) {
+        function containsZero(step) {
             return (step[0] <= 0 && step[1] >= 0) ? [Math.abs(step[0] / step[2]), step[1] / step[2]] : undefined;
-        };
-        var zeroOne = containsZero(one);
-        var zeroTwo = containsZero(two);
+        }
+        var zeroOne = containsZero(one), zeroTwo = containsZero(two);
         if (zeroOne && zeroTwo) {
             var max = [
                 Math.max(zeroOne[0], zeroTwo[0]),

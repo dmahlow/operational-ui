@@ -112,15 +112,15 @@ class QuantAxis extends AbstractAxis {
   // Aligns Zeros if both domains have zeros otherwise aligns number of ticks
   // Expects steps to be an array of [start, stop, step]
   static alignSteps(one: any, two: any): void {
-    let containsZero: (step: number[]) => [number, number] = function(step: number[]): [number, number] {
+    function containsZero(step: number[]): [number, number] {
       return (step[0] <= 0 && step[1] >= 0) ? [Math.abs(step[0] / step[2]), step[1] / step[2]] : undefined
     }
 
-    let zeroOne: number[] = containsZero(one)
-    let zeroTwo: number[] = containsZero(two)
+    const zeroOne: number[] = containsZero(one),
+      zeroTwo: number[] = containsZero(two)
 
     if (zeroOne && zeroTwo) {
-      let max: [number, number] = [
+      const max: [number, number] = [
         Math.max(zeroOne[0], zeroTwo[0]),
         Math.max(zeroOne[1], zeroTwo[1])
       ]

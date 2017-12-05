@@ -28,9 +28,10 @@ var Rules = /** @class */ (function (_super) {
                 break;
             case "y":
                 // Extend rules outside of the drawing area
-                var axisDimensions = this.state.current.get("computed").axes;
-                coordinates.x10 = coordinates.x11 = axisDimensions.y1.dimensions.width / 2;
-                coordinates.x20 = coordinates.x21 = this.state.current.get("computed").canvas.drawingContainerDims.width + axisDimensions.y2.dimensions.width / 2;
+                var computed = this.state.current.get("computed");
+                var axisDimensions = computed.axes;
+                coordinates.x10 = coordinates.x11 = axisDimensions.y1 ? axisDimensions.y1.dimensions.width / 2 : 0;
+                coordinates.x20 = coordinates.x21 = computed.canvas.drawingContainerDims.width - (axisDimensions.y2 ? axisDimensions.y2.dimensions.width / 2 : 0);
                 coordinates.y10 = coordinates.y20 = previousScale;
                 coordinates.y11 = coordinates.y21 = scale;
                 break;

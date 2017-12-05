@@ -235,10 +235,10 @@ abstract class AbstractAxis {
   computeRange(): [number, number] {
     const otherAxesDims: any = this.state.current.get("computed").axes,
       drawingContainerDims: IObject = this.state.current.get("computed").canvas.drawingContainerDims,
-      x1Height: number = otherAxesDims.x1 ? otherAxesDims.x1.dimensions.height : 0,
-      x2Height: number = otherAxesDims.x2 ? otherAxesDims.x2.dimensions.height : 0,
-      y1Width: number = otherAxesDims.y1 ? otherAxesDims.y1.dimensions.width : 0,
-      y2Width: number = otherAxesDims.y2 ? otherAxesDims.y2.dimensions.width : 0
+      x1Height: number = otherAxesDims.x1 && otherAxesDims.x1.dimensions ? otherAxesDims.x1.dimensions.height : 0,
+      x2Height: number = otherAxesDims.x2 && otherAxesDims.x2.dimensions ? otherAxesDims.x2.dimensions.height : 0,
+      y1Width: number = otherAxesDims.y1 && otherAxesDims.y1.dimensions ? otherAxesDims.y1.dimensions.width : 0,
+      y2Width: number = otherAxesDims.y2 && otherAxesDims.y2.dimensions ? otherAxesDims.y2.dimensions.width : 0
 
     return this.orientation() === "x"
       ? [y1Width, drawingContainerDims.width - y2Width]

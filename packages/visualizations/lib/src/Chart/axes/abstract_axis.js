@@ -163,7 +163,7 @@ var AbstractAxis = /** @class */ (function () {
         return fp_1.defaults(attributes)({ x: x0, y: y0 });
     };
     AbstractAxis.prototype.computeRange = function () {
-        var otherAxesDims = this.state.current.get("computed").axes, drawingContainerDims = this.state.current.get("computed").canvas.drawingContainerDims, x1Height = otherAxesDims.x1 ? otherAxesDims.x1.dimensions.height : 0, x2Height = otherAxesDims.x2 ? otherAxesDims.x2.dimensions.height : 0, y1Width = otherAxesDims.y1 ? otherAxesDims.y1.dimensions.width : 0, y2Width = otherAxesDims.y2 ? otherAxesDims.y2.dimensions.width : 0;
+        var otherAxesDims = this.state.current.get("computed").axes, drawingContainerDims = this.state.current.get("computed").canvas.drawingContainerDims, x1Height = otherAxesDims.x1 && otherAxesDims.x1.dimensions ? otherAxesDims.x1.dimensions.height : 0, x2Height = otherAxesDims.x2 && otherAxesDims.x2.dimensions ? otherAxesDims.x2.dimensions.height : 0, y1Width = otherAxesDims.y1 && otherAxesDims.y1.dimensions ? otherAxesDims.y1.dimensions.width : 0, y2Width = otherAxesDims.y2 && otherAxesDims.y2.dimensions ? otherAxesDims.y2.dimensions.width : 0;
         return this.orientation() === "x"
             ? [y1Width, drawingContainerDims.width - y2Width]
             : [drawingContainerDims.height - x1Height, x2Height + this.state.current.get("config").y1.minTopOffsetTopTick];
