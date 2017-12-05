@@ -74,6 +74,7 @@ class QuantAxis extends AbstractAxis {
     // Set flag whether graphical transition from earlier
     // values should be attempted
     this.computed.transition = this.drawn
+    this.stateWriter(["computed"], this.computed)
   }
 
   // Needed for bar and area charts

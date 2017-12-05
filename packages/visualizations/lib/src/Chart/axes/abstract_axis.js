@@ -14,13 +14,14 @@ var sideMapping = {
     "y2": "right"
 };
 var AbstractAxis = /** @class */ (function () {
-    function AbstractAxis(state, name, options, elGroup) {
+    function AbstractAxis(state, stateWriter, name, options, elGroup) {
         if (options === void 0) { options = {}; }
         // Initially nothing has been computed (this becomes previous in first compute call)
         this.computed = {};
         this.drawn = false;
         this.hasSpaceForFlags = false;
         this.state = state;
+        this.stateWriter = stateWriter;
         this.name = name;
         this.type = options.type;
         this.elGroup = elGroup;
@@ -43,6 +44,7 @@ var AbstractAxis = /** @class */ (function () {
         this.computeAxisInformation(computed, args);
         this.computed = computed;
         this.previous = fp_1.defaults(this.computed)(this.previous);
+        this.stateWriter(["computed"], this.computed);
     };
     AbstractAxis.prototype.data = function () {
         return this.state.current.get("computed").series.computed[this.name].data;
@@ -86,6 +88,7 @@ var AbstractAxis = /** @class */ (function () {
         this.data().length > 0
             ? (this.drawn ? this.updateDraw() : this.initialDraw())
             : this.close();
+        this.stateWriter(["dimensions"], this.axisDimensions());
     };
     AbstractAxis.prototype.initialDraw = function () {
         // svg element

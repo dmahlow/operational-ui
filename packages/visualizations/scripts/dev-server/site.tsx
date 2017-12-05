@@ -23,7 +23,7 @@ class Site extends React.Component<{}, {}> {
             [23200, "J"]
           ],
           dataFormat: ["string", "number"],
-          render: ["bars"],
+          renderAs: ["line"],
           color: "#00f",
         },
         {
@@ -35,12 +35,13 @@ class Site extends React.Component<{}, {}> {
             ["C", 118600],
             ["D", 220500],
             ["E", 120770],
+            ["F", 190230],
             ["G", 222900],
             ["H", 122100],
             ["I", 323500]
           ],
           dataFormat: ["string", "number"],
-          render: ["bars"],
+          renderAs: ["line"],
           color: "#0f0",
           yAxis: "y2"
         }

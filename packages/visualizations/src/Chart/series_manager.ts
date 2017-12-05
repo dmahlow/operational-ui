@@ -1,5 +1,5 @@
 import Series from "./series/series"
-import { concat, filter, flow, forEach, invoke, isArray, keys, map, reduce, result, some, sortBy, uniqueId, uniq } from "lodash/fp"
+import { concat, filter, flatten, flow, forEach, invoke, isArray, keys, map, reduce, result, some, sortBy, uniqueId, uniq } from "lodash/fp"
 import { IEvents, IState, IObject, TStateWriter, TD3Selection } from "./typings"
 
 class SeriesManager {
@@ -32,6 +32,7 @@ class SeriesManager {
 
     forEach(this.prepareSeries.bind(this))(dataSeries)
     forEach(this.updateComputed(computed).bind(this))(this.series)
+    this.addMissingDatapoints()
 
     this.stateWriter("series", this.series)
     this.stateWriter("oldSeries", this.oldSeries)
@@ -47,7 +48,6 @@ class SeriesManager {
   // @TODO Move to individual series?
   exportData(): void {
     this.multipleAxes()
-    this.requiredAxes()
   }
 
   prepareSeries(attributes: any): void {
@@ -63,7 +63,7 @@ class SeriesManager {
   }
 
   create(attributes: any): void {
-    this.series[attributes.key] = new Series(attributes, this.state.current.get("accessors").series)
+    this.series[attributes.key] = new Series(this.state, attributes, this.state.current.get("accessors").series)
   }
 
   updateComputed(computed: IObject) {
@@ -90,6 +90,24 @@ class SeriesManager {
         return memo
       }, computed)([series.xAxis(), series.yAxis()])
     }
+  }
+
+  addMissingDatapoints(): void {
+    const requiredAxes: string[] = this.requiredAxes()
+    forEach((axis: string): void => {
+      const series: Series[] = this.seriesForAxes()[axis]
+      if (series.length > 1 && ["ordinal", "time"].indexOf(this.state.current.get("data").axes[axis].type) > -1) {
+        const requiredValues: any[] = flow(
+          map((s: Series): any[] => s.dataForAxis(axis)),
+          flatten,
+          uniq,
+          sortBy((x: any) => x)
+        )(series)
+        forEach((s: Series): void => {
+          s.addMissingDatapoints(axis, requiredValues)
+        })(series)
+      }
+    })(requiredAxes)
   }
 
   get(sid: string): any {
@@ -124,7 +142,7 @@ class SeriesManager {
     this.oldSeries = []
 
     // Draw the new stuff
-    invoke("draw")(this.series)
+    forEach(invoke("draw"))(this.series)
   }
 
   multipleAxes(): void {
@@ -138,7 +156,7 @@ class SeriesManager {
       }
   }
 
-  requiredAxes(): void {
+  requiredAxes(): string[] {
     const required: string[] = uniq(
       reduce((memo: string[], series: Series): string[] => {
         memo.push(series.xAxis())
@@ -147,16 +165,19 @@ class SeriesManager {
       }, [])(this.series)
     )
     this.stateWriter("requiredAxes", required)
+    return required
   }
 
-  seriesForAxes(): void {
+  seriesForAxes(): IObject {
     const axes: IObject = {}
     forEach((axis: string): void => {
-      axes[axis] = filter((series: Series): boolean => {
+      const axisSeries: Series[] = filter((series: Series): boolean => {
         return series.xAxis() === axis || series.yAxis() === axis
       })(this.series)
-    })(["x1", "x2", "y1", "y2"])
+      axes[axis] = axisSeries
+    })(this.state.current.get("computed").series.requiredAxes)
     this.stateWriter("seriesForAxes", axes)
+    return axes
   }
 }
 

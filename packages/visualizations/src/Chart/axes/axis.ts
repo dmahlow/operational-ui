@@ -5,7 +5,7 @@ import OrdinalAxis from "./ordinal_axis"
 import AbstractAxis from "./abstract_axis"
 
 import { find } from "lodash/fp"
-import { IObject, IState, TD3Selection } from "../typings"
+import { IObject, IState, TStateWriter, TD3Selection } from "../typings"
 
 const config: [any, string, string][] = [
   // [TimeAxis, "time", "date"],
@@ -17,13 +17,13 @@ const config: [any, string, string][] = [
 // Factory Class
 class Axis {
 
-  constructor(state: IState, name: string, options: IObject = {}, elGroup: TD3Selection) {
+  constructor(state: IState, stateWriter: TStateWriter, name: string, options: IObject = {}, elGroup: TD3Selection) {
     const type: any[] = find({ 1: options.type })(config)
     if (!type) {
       throw new Error("invalid axis type " + options.type + " specified")
     }
 
-    let axis: AbstractAxis = new type[0](state, name, options, elGroup)
+    let axis: AbstractAxis = new type[0](state, stateWriter, name, options, elGroup)
     return axis
   }
 }

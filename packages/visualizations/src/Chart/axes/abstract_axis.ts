@@ -6,7 +6,7 @@ import { easeLinear } from "d3-ease"
 import { scaleBand as d3ScaleBand } from "d3-scale"
 import { range as d3Range } from "d3-array"
 import { setLineAttributes, setTextAttributes } from "../../utils/d3_utils"
-import { IConfig, IObject, IState, TD3Selection } from "../typings"
+import { IConfig, IObject, IState, TStateWriter, TD3Selection } from "../typings"
 import { defaults, last, map, reduce } from "lodash/fp"
 import * as styles from "./styles"
 
@@ -33,9 +33,11 @@ abstract class AbstractAxis {
   type: string
   userConfigured: boolean
   hasSpaceForFlags: boolean = false
+  stateWriter: TStateWriter
 
-  constructor(state: IState, name: string, options: any = {}, elGroup: TD3Selection) {
+  constructor(state: IState, stateWriter: TStateWriter, name: string, options: any = {}, elGroup: TD3Selection) {
     this.state = state
+    this.stateWriter = stateWriter
     this.name = name
     this.type = options.type
     this.elGroup = elGroup
@@ -63,6 +65,7 @@ abstract class AbstractAxis {
     this.computeAxisInformation(computed, args)
     this.computed = computed
     this.previous = defaults(this.computed)(this.previous)
+    this.stateWriter(["computed"], this.computed)
   }
 
   data(): any[] {
@@ -117,6 +120,7 @@ abstract class AbstractAxis {
     this.data().length > 0
       ? (this.drawn ? this.updateDraw() : this.initialDraw())
       : this.close()
+    this.stateWriter(["dimensions"], this.axisDimensions())
   }
 
   initialDraw(): void {

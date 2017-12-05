@@ -34,3 +34,12 @@ export const setTextAttributes = (selection: any, attributes: any, duration?: nu
     .text(attributes.labelText)
     .style("opacity", attributes.opacity || 1);
 }
+
+export const setPathAttributes = (selection: any, attributes: any, duration?: number): void => {
+  // If 'color' is provided, it is used for both fill and stroke, unless these are explicitly set.
+  transitionOrSelection(selection, duration)
+    .attr("d", attributes.path)
+    .style("fill", attributes.fill || attributes.color)
+    .style("stroke", attributes.stroke || attributes.color)
+    .style("opacity", attributes.opacity)
+}

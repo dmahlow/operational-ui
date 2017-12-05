@@ -77,6 +77,7 @@ var QuantAxis = /** @class */ (function (_super) {
         // Set flag whether graphical transition from earlier
         // values should be attempted
         this.computed.transition = this.drawn;
+        this.stateWriter(["computed"], this.computed);
     };
     // Needed for bar and area charts
     // depends on whether domain is ascending or descending

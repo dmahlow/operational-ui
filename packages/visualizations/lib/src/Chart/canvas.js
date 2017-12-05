@@ -14,7 +14,14 @@ var drawing_canvas_1 = require("../utils/drawing_canvas");
 var event_catalog_1 = require("../utils/event_catalog");
 var d3 = require("d3-selection");
 var fp_1 = require("lodash/fp");
-var seriesElements = [];
+var seriesElements = [
+    // ["area", "drawing_clip"],
+    // ["range", "drawing_clip"],
+    // ["bars", "drawing_clip"],
+    // ["bar_line", "drawing_clip"],
+    // ["event_flag", "drawing_clip"],
+    ["line", "drawing_clip"],
+];
 var legendOptions = [
     ["top", "left"],
     ["top", "right"],

@@ -169,6 +169,7 @@ declare namespace fp {
     invoke: any
     isDate: any
     isFinite: any
+    isFunction: any
     isMatch: any
     isObject: any
     isString: any

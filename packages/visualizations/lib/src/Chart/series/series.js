@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var renderer_1 = require("./renderer/renderer");
 var fp_1 = require("lodash/fp");
 var axisTypeMapper = {
     time: "date",
@@ -26,18 +27,29 @@ function hashObject(obj) {
     return hashString(JSON.stringify(obj));
 }
 var Series = /** @class */ (function () {
-    function Series(attributes, accessors) {
+    function Series(state, attributes, accessors) {
         this.dataPoints = [];
         this.drawn = false;
+        this.state = state;
         this.attributes = fp_1.extend.convert({ immutable: false })({}, attributes);
         this.accessors = accessors;
         this.assignAccessors();
+        this.renderers = this.initializeRenderers();
     }
     Series.prototype.assignAccessors = function () {
         var _this = this;
         fp_1.forEach.convert({ cap: false })(function (accessor, key) {
             _this[key] = function () { return accessor(_this.attributes); };
         })(this.accessors);
+    };
+    Series.prototype.initializeRenderers = function () {
+        var _this = this;
+        var renderers = this.renderAs();
+        return fp_1.reduce(function (memo, renderer) {
+            var el = _this.state.current.get("computed").canvas.elements.series[renderer];
+            memo.push(new renderer_1.default(_this.state, _this, renderer, el, {}));
+            return memo;
+        }, [])(renderers);
     };
     // Remove rows with invalid data
     Series.prototype.setData = function (data, total) {
@@ -65,6 +77,19 @@ var Series = /** @class */ (function () {
     };
     Series.prototype.hasData = function () {
         return this.data() != null && this.data().length > 0;
+    };
+    Series.prototype.addMissingDatapoints = function (axis, requiredValues) {
+        var currentValues = this.dataForAxis(axis), currentData = this.dataPoints, index = this.dataIndeces()[axis[0]];
+        if (currentValues.length === requiredValues.length) {
+            return;
+        }
+        this.dataPoints = fp_1.map(function (val) {
+            var datum = [];
+            datum[index] = val;
+            var current = currentData.find(function (datum) { return datum[index] === val; });
+            datum[1 - index] = current ? current[1 - index] : undefined;
+            return datum;
+        })(requiredValues);
     };
     Series.prototype.seriesAxisType = function (axis) {
         return this.dataFormat()[this.dataIndeces()[axis[0]]];
@@ -124,18 +149,11 @@ var Series = /** @class */ (function () {
         this.drawn ? this.updateDraw() : this.initialDraw();
     };
     Series.prototype.initialDraw = function () {
-        // el for series is actually a POJO of svg:g elements for all the different renderers
-        this.el = this.state.canvas.insertSeries();
         this.updateDraw();
         this.drawn = true;
     };
     Series.prototype.updateDraw = function () {
-        var _this = this;
-        fp_1.forEach(function (el) {
-            el.attr("class", "series")
-                .attr("data-sid", _this.key());
-        })(this.el);
-        this.hasData() ? fp_1.invoke("draw")(this.renderAs()) : fp_1.invoke("close")(this.renderAs());
+        this.hasData() ? fp_1.forEach(fp_1.invoke("draw"))(this.renderers) : fp_1.forEach(fp_1.invoke("close"))(this.renderers);
     };
     Series.prototype.resize = function () {
         if (this.hasData()) {

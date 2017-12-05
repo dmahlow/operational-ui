@@ -22,6 +22,7 @@ var SeriesManager = /** @class */ (function () {
         this.removeAllExcept(seriesKeys);
         fp_1.forEach(this.prepareSeries.bind(this))(dataSeries);
         fp_1.forEach(this.updateComputed(computed).bind(this))(this.series);
+        this.addMissingDatapoints();
         this.stateWriter("series", this.series);
         this.stateWriter("oldSeries", this.oldSeries);
         this.stateWriter("hasData", this.hasData());
@@ -34,7 +35,6 @@ var SeriesManager = /** @class */ (function () {
     // @TODO Move to individual series?
     SeriesManager.prototype.exportData = function () {
         this.multipleAxes();
-        this.requiredAxes();
     };
     SeriesManager.prototype.prepareSeries = function (attributes) {
         this.updateOrCreate(attributes);
@@ -47,7 +47,7 @@ var SeriesManager = /** @class */ (function () {
         series != null ? series.update(attributes) : this.create(attributes);
     };
     SeriesManager.prototype.create = function (attributes) {
-        this.series[attributes.key] = new series_1.default(attributes, this.state.current.get("accessors").series);
+        this.series[attributes.key] = new series_1.default(this.state, attributes, this.state.current.get("accessors").series);
     };
     SeriesManager.prototype.updateComputed = function (computed) {
         var _this = this;
@@ -67,6 +67,19 @@ var SeriesManager = /** @class */ (function () {
                 return memo;
             }, computed)([series.xAxis(), series.yAxis()]);
         };
+    };
+    SeriesManager.prototype.addMissingDatapoints = function () {
+        var _this = this;
+        var requiredAxes = this.requiredAxes();
+        fp_1.forEach(function (axis) {
+            var series = _this.seriesForAxes()[axis];
+            if (series.length > 1 && ["ordinal", "time"].indexOf(_this.state.current.get("data").axes[axis].type) > -1) {
+                var requiredValues_1 = fp_1.flow(fp_1.map(function (s) { return s.dataForAxis(axis); }), fp_1.flatten, fp_1.uniq, fp_1.sortBy(function (x) { return x; }))(series);
+                fp_1.forEach(function (s) {
+                    s.addMissingDatapoints(axis, requiredValues_1);
+                })(series);
+            }
+        })(requiredAxes);
     };
     SeriesManager.prototype.get = function (sid) {
         return this.series[sid];
@@ -90,7 +103,7 @@ var SeriesManager = /** @class */ (function () {
         fp_1.invoke("close")(this.oldSeries);
         this.oldSeries = [];
         // Draw the new stuff
-        fp_1.invoke("draw")(this.series);
+        fp_1.forEach(fp_1.invoke("draw"))(this.series);
     };
     SeriesManager.prototype.multipleAxes = function () {
         var xAxes = fp_1.uniq(fp_1.map(function (series) { return series.xAxis(); })(this.series)), yAxes = fp_1.uniq(fp_1.map(function (series) { return series.yAxis(); })(this.series));
@@ -108,16 +121,19 @@ var SeriesManager = /** @class */ (function () {
             return memo;
         }, [])(this.series));
         this.stateWriter("requiredAxes", required);
+        return required;
     };
     SeriesManager.prototype.seriesForAxes = function () {
         var _this = this;
         var axes = {};
         fp_1.forEach(function (axis) {
-            axes[axis] = fp_1.filter(function (series) {
+            var axisSeries = fp_1.filter(function (series) {
                 return series.xAxis() === axis || series.yAxis() === axis;
             })(_this.series);
-        })(["x1", "x2", "y1", "y2"]);
+            axes[axis] = axisSeries;
+        })(this.state.current.get("computed").series.requiredAxes);
         this.stateWriter("seriesForAxes", axes);
+        return axes;
     };
     return SeriesManager;
 }());

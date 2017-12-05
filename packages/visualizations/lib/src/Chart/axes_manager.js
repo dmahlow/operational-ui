@@ -18,6 +18,13 @@ var AxesManager = /** @class */ (function () {
             throw new Error("invalid axis name '" + name + "' - valid names " + validAxes.join(" or "));
         }
     };
+    AxesManager.prototype.subStateWriter = function (axis) {
+        var _this = this;
+        this.stateWriter([axis], {});
+        return function (path, value) {
+            _this.stateWriter([axis].concat(path), value);
+        };
+    };
     AxesManager.prototype.compute = function () {
         var _this = this;
         this.oldAxes = this.axes;
@@ -25,8 +32,13 @@ var AxesManager = /** @class */ (function () {
         var axesData = this.state.current.get("accessors").data.axes(this.state.current.get("data")), elements = this.state.current.get("computed").canvas.elements;
         fp_1.forEach.convert({ cap: false })(function (axisData, key) {
             _this.checkValidity(key);
+            if (!_this.isRequiredAxis(key)) {
+                return;
+            }
             var existingAxisIndex = fp_1.findIndex({ name: key, type: axisData.type })(_this.oldAxes);
-            _this.axes.push(existingAxisIndex > -1 ? _this.oldAxes[existingAxisIndex] : new axis_1.default(_this.state, key, axisData, elements[key[0] + "Axes"]));
+            _this.axes.push(existingAxisIndex > -1
+                ? _this.oldAxes[existingAxisIndex]
+                : new axis_1.default(_this.state, _this.subStateWriter(key), key, axisData, elements[key[0] + "Axes"]));
             if (existingAxisIndex > -1) {
                 _this.oldAxes.splice(existingAxisIndex, 1);
             }
@@ -34,8 +46,8 @@ var AxesManager = /** @class */ (function () {
         fp_1.forEach(fp_1.invoke("close"))(this.oldAxes);
         this.eachXY(function (axes) {
             // only if both axes are used by series do they need to be aligned
-            var requiredAxes = _this.state.current.get("computed").series.requiredAxes, computeAxes = fp_1.filter(function (axis) {
-                return requiredAxes.indexOf(axis.name) > -1;
+            var computeAxes = fp_1.filter(function (axis) {
+                return _this.isRequiredAxis(axis.name);
             })(axes);
             if (computeAxes.length === 2) {
                 _this.align(computeAxes);
@@ -45,13 +57,17 @@ var AxesManager = /** @class */ (function () {
             }
         });
     };
+    AxesManager.prototype.isRequiredAxis = function (axisName) {
+        var requiredAxes = this.state.current.get("computed").series.requiredAxes;
+        return requiredAxes.indexOf(axisName) > -1;
+    };
     AxesManager.prototype.draw = function () {
         var _this = this;
         this.compute();
         this.eachXY(function (axes) {
             // only if both axes are used by series do they need to be aligned
-            var requiredAxes = _this.state.current.get("computed").series.requiredAxes, computeAxes = fp_1.filter(function (axis) {
-                return requiredAxes.indexOf(axis.name) > -1;
+            var computeAxes = fp_1.filter(function (axis) {
+                return _this.isRequiredAxis(axis.name);
             })(axes);
             if (computeAxes.length === 2) {
                 _this.align(computeAxes);
@@ -59,12 +75,11 @@ var AxesManager = /** @class */ (function () {
             else {
                 fp_1.forEach(function (axis) {
                     axis.compute();
-                })(axes);
+                })(computeAxes);
             }
             fp_1.forEach(function (axis) {
                 axis.draw();
-                _this.stateWriter([axis.name], { dimensions: axis.axisDimensions() });
-            })(axes);
+            })(computeAxes);
         });
         this.adjustMargins();
         this.drawRules();

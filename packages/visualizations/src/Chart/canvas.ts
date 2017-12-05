@@ -10,7 +10,7 @@ const seriesElements: string[][] = [
   // ["bars", "drawing_clip"],
   // ["bar_line", "drawing_clip"],
   // ["event_flag", "drawing_clip"],
-  // ["line", "drawing_clip"],
+  ["line", "drawing_clip"],
   // ["circles", "drawing_clip"],
   // ["trend", "drawing_clip"],
   // ["points", "drawing_clip"],

@@ -11,13 +11,13 @@ var config = [
 ];
 // Factory Class
 var Axis = /** @class */ (function () {
-    function Axis(state, name, options, elGroup) {
+    function Axis(state, stateWriter, name, options, elGroup) {
         if (options === void 0) { options = {}; }
         var type = fp_1.find({ 1: options.type })(config);
         if (!type) {
             throw new Error("invalid axis type " + options.type + " specified");
         }
-        var axis = new type[0](state, name, options, elGroup);
+        var axis = new type[0](state, stateWriter, name, options, elGroup);
         return axis;
     }
     return Axis;

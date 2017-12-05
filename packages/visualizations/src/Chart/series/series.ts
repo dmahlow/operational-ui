@@ -1,5 +1,5 @@
-// import Renderer from "./renderer/renderer"
-import { IObject } from "../typings"
+import Renderer from "./renderer/renderer"
+import { TD3Selection, IObject, IState } from "../typings"
 import { every, extend, filter, forEach, get, invoke, isArray, isDate, isObject, map, reduce } from "lodash/fp"
 
 const axisTypeMapper: IObject = {
@@ -30,7 +30,6 @@ function hashObject(obj: IObject): number {
 }
 
 class Series {
-  // data: (d: any) => any
   accessors: any
   attributes: any
   axisUnit: string
@@ -48,24 +47,36 @@ class Series {
   mappings: any
   name: () => string
   renderAs: () => any
+  renderers: Renderer[]
   renderersHash: number
   stacked: boolean
-  state: any
+  state: IState
   total: number
   unit: () => string
   xAxis: () => string
   yAxis: () => string
 
-  constructor(attributes: any, accessors: any) {
+  constructor(state: IState, attributes: any, accessors: any) {
+    this.state = state
     this.attributes = extend.convert({ immutable: false })({}, attributes)
     this.accessors = accessors
     this.assignAccessors()
+    this.renderers = this.initializeRenderers()
   }
 
   assignAccessors(): void {
     forEach.convert({ cap: false })((accessor: any, key: string) => {
       (this as any)[key] = () => accessor(this.attributes)
     })(this.accessors)
+  }
+
+  initializeRenderers(): Renderer[] {
+    const renderers: string[] = this.renderAs()
+    return reduce((memo: Renderer[], renderer: string): Renderer[] => {
+      const el: TD3Selection = this.state.current.get("computed").canvas.elements.series[renderer]
+      memo.push(new Renderer(this.state, this, renderer, el, {}))
+      return memo
+    }, [])(renderers)
   }
 
   // Remove rows with invalid data
@@ -96,6 +107,22 @@ class Series {
 
   hasData(): boolean {
     return this.data() != null && this.data().length > 0
+  }
+
+  addMissingDatapoints(axis: string, requiredValues: any[]): void {
+    const currentValues: any[] = this.dataForAxis(axis),
+      currentData: any[] = this.dataPoints,
+      index: number = this.dataIndeces()[axis[0]]
+
+    if (currentValues.length === requiredValues.length) { return }
+
+    this.dataPoints = map((val: any): any[] => {
+      let datum: any[] = []
+      datum[index] = val
+      const current: any[] = currentData.find((datum: any[]): boolean => datum[index] === val)
+      datum[1 - index] = current ? current[1 - index] : undefined
+      return datum
+    })(requiredValues)
   }
 
   seriesAxisType(axis: string): string {
@@ -163,19 +190,12 @@ class Series {
   }
 
   initialDraw(): void {
-    // el for series is actually a POJO of svg:g elements for all the different renderers
-    this.el = this.state.canvas.insertSeries()
     this.updateDraw()
     this.drawn = true
   }
 
   updateDraw(): void {
-    forEach((el: any): void => {
-      el.attr("class", "series")
-        .attr("data-sid", this.key())
-    })(this.el)
-
-    this.hasData() ? invoke("draw")(this.renderAs()) : invoke("close")(this.renderAs())
+    this.hasData() ? forEach(invoke("draw"))(this.renderers) : forEach(invoke("close"))(this.renderers)
   }
 
   resize(): void {

@@ -27,6 +27,13 @@ class AxesManager {
     }
   }
 
+  subStateWriter(axis: string): any {
+    this.stateWriter([axis], {})
+    return (path: string[], value: any): void => {
+      this.stateWriter([axis].concat(path), value)
+    }
+  }
+
   compute(): void {
     this.oldAxes = this.axes
     this.axes = []
@@ -36,8 +43,13 @@ class AxesManager {
 
     forEach.convert({ cap: false })((axisData: IObject, key: string): void => {
       this.checkValidity(key)
+      if (!this.isRequiredAxis(key)) { return }
       const existingAxisIndex: number = findIndex({ name: key, type: axisData.type })(this.oldAxes)
-      this.axes.push(existingAxisIndex > -1 ? this.oldAxes[existingAxisIndex] : new Axis(this.state, key, axisData, elements[key[0] + "Axes"]))
+      this.axes.push(
+        existingAxisIndex > -1
+          ? this.oldAxes[existingAxisIndex]
+          : new Axis(this.state, this.subStateWriter(key), key, axisData, elements[key[0] + "Axes"])
+      )
       if (existingAxisIndex > -1) {
         this.oldAxes.splice(existingAxisIndex, 1)
       }
@@ -47,10 +59,9 @@ class AxesManager {
 
     this.eachXY((axes: AbstractAxis[]): void => {
       // only if both axes are used by series do they need to be aligned
-      const requiredAxes: string[] = this.state.current.get("computed").series.requiredAxes,
-        computeAxes: any = filter((axis: AbstractAxis): boolean => {
-          return requiredAxes.indexOf(axis.name) > -1
-        })(axes)
+      const computeAxes: any = filter((axis: AbstractAxis): boolean => {
+        return this.isRequiredAxis(axis.name)
+      })(axes)
 
       if (computeAxes.length === 2) {
         this.align(computeAxes)
@@ -60,25 +71,28 @@ class AxesManager {
     })
   }
 
+  isRequiredAxis(axisName: string): boolean {
+    const requiredAxes: string[] = this.state.current.get("computed").series.requiredAxes
+    return requiredAxes.indexOf(axisName) > -1
+  }
+
   draw(): void {
     this.compute()
     this.eachXY((axes: AbstractAxis[]): void => {
       // only if both axes are used by series do they need to be aligned
-      const requiredAxes: string[] = this.state.current.get("computed").series.requiredAxes,
-        computeAxes: any = filter((axis: AbstractAxis): boolean => {
-          return requiredAxes.indexOf(axis.name) > -1
-        })(axes)
+      const computeAxes: any = filter((axis: AbstractAxis): boolean => {
+        return this.isRequiredAxis(axis.name)
+      })(axes)
       if (computeAxes.length === 2) {
         this.align(computeAxes)
       } else {
         forEach((axis: AbstractAxis): void => {
           axis.compute()
-        })(axes)
+        })(computeAxes)
       }
       forEach((axis: AbstractAxis): void => {
         axis.draw()
-        this.stateWriter([axis.name], { dimensions: axis.axisDimensions() })
-      })(axes)
+      })(computeAxes)
     })
     this.adjustMargins()
     this.drawRules()
