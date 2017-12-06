@@ -31,10 +31,6 @@ class Line extends AbstractRenderer {
     }
   }
 
-  yIsBaseline(): boolean {
-    return this.baseline.axis[0] === "y"
-  }
-
   // Workaround - we need to get d3 element from context
   onMouseOver(ctx: any): (d: any, i: number) => void {
     return function(d: any, i: number): void {

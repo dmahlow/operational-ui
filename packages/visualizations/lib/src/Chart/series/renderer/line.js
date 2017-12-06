@@ -42,9 +42,6 @@ var Line = /** @class */ (function (_super) {
                 .defined(defined(_this.yIsBaseline() ? y : x));
         };
     };
-    Line.prototype.yIsBaseline = function () {
-        return this.baseline.axis[0] === "y";
-    };
     // Workaround - we need to get d3 element from context
     Line.prototype.onMouseOver = function (ctx) {
         return function (d, i) {

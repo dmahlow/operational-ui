@@ -13,4 +13,12 @@ const lineStyle = {
   }
 }
 
+const textlabelStyle = {
+  "& text": {
+    fontSize: "10px",
+    fill: "#333"
+  }
+}
+
 export const line = css(lineStyle).toString()
+export const textlabels = css(textlabelStyle).toString()

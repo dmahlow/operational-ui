@@ -5,6 +5,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import Bars from "./bars"
 // import EventFlag from "./event_flag"
 var line_1 = require("./line");
+// import Points from "./points"
+// import Range from "./range"
+var textlabels_1 = require("./textlabels");
 // Factory Class
 var Renderer = /** @class */ (function () {
     function Renderer(state, series, type, el, options) {
@@ -23,8 +26,8 @@ var Renderer = /** @class */ (function () {
             //   return new Points(state, series, options)
             // case "range":
             //   return new Range(state, series, options)
-            // case "textlabels":
-            //   return new TextLabels(state, series, options)
+            case "textlabels":
+                return new textlabels_1.default(state, series, el, options);
             default:
                 throw new Error("invalid render type '" + type + "' specified");
         }

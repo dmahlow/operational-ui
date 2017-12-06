@@ -14,7 +14,7 @@ const seriesElements: string[][] = [
   // ["circles", "drawing_clip"],
   // ["trend", "drawing_clip"],
   // ["points", "drawing_clip"],
-  // ["textlabels", "yrules_clip"]
+  ["textlabels", "yrules_clip"]
 ]
 
 const legendOptions: string[][] = [

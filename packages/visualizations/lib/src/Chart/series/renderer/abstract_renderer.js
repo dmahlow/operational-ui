@@ -22,9 +22,9 @@ var AbstractRenderer = /** @class */ (function () {
     AbstractRenderer.prototype.initialize = function () {
         return;
     };
-    // yIsBaseline(): boolean {
-    //   return this.baseline.axis === this.y.axis
-    // }
+    AbstractRenderer.prototype.yIsBaseline = function () {
+        return this.baseline.axis[0] === "y";
+    };
     // We need to get d3 element from context, can't bind onClick to this
     AbstractRenderer.prototype.onClick = function (ctx) {
         return function (d, i) {
@@ -51,7 +51,7 @@ var AbstractRenderer = /** @class */ (function () {
         })(computedAxes);
         this.x = computedAxes[this.series.xAxis()].computed;
         this.y = computedAxes[this.series.yAxis()].computed;
-        // this.prepareDraw()
+        this.prepareDraw();
         if (this.drawn) {
             this.updateDraw();
         }
@@ -60,11 +60,11 @@ var AbstractRenderer = /** @class */ (function () {
             this.initialDraw();
         }
     };
-    // prepareDraw(): void {
-    //   if (!this.baseline) {
-    //     throw new Error(this.type + " renderer needs at least one axis with baseline (quant axis)")
-    //   }
-    // }
+    AbstractRenderer.prototype.prepareDraw = function () {
+        if (!this.baseline) {
+            throw new Error(this.type + " renderer needs at least one axis with baseline (quant axis)");
+        }
+    };
     AbstractRenderer.prototype.appendGroup = function () {
         // svg element
         this.el.append("svg:g")

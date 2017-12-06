@@ -5,7 +5,7 @@
 import Line from "./line"
 // import Points from "./points"
 // import Range from "./range"
-// import TextLabels from "./textlabels"
+import TextLabels from "./textlabels"
 import { TD3Selection, IObject, IState } from "../../typings"
 
 // Factory Class
@@ -27,8 +27,8 @@ class Renderer {
       //   return new Points(state, series, options)
       // case "range":
       //   return new Range(state, series, options)
-      // case "textlabels":
-      //   return new TextLabels(state, series, options)
+      case "textlabels":
+        return new TextLabels(state, series, el, options)
       default:
         throw new Error("invalid render type '" + type + "' specified")
     }

@@ -23,7 +23,7 @@ class Site extends React.Component<{}, {}> {
             [23200, "J"]
           ],
           dataFormat: ["string", "number"],
-          renderAs: ["line"],
+          renderAs: ["line", "textlabels"],
           color: "#00f",
         },
         {
@@ -41,7 +41,7 @@ class Site extends React.Component<{}, {}> {
             ["I", 323500]
           ],
           dataFormat: ["string", "number"],
-          renderAs: ["line"],
+          renderAs: ["line", "textlabels"],
           color: "#0f0",
           yAxis: "y2"
         }
