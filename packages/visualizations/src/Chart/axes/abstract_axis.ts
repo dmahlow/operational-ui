@@ -109,7 +109,6 @@ abstract class AbstractAxis {
     this.data().length > 0
       ? (this.drawn ? this.updateDraw() : this.initialDraw())
       : this.close()
-    this.stateWriter(["dimensions"], this.axisDimensions())
   }
 
   initialDraw(): void {
@@ -183,6 +182,9 @@ abstract class AbstractAxis {
 
     this.el.select(`line.${styles.border}`)
       .call(setLineAttributes, this.border(), duration)
+
+    this.stateWriter(["drawn"], true)
+    this.stateWriter(["dimensions"], this.axisDimensions())
   }
 
   getAttributes(): any {

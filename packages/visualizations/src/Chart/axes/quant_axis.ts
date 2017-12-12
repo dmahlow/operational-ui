@@ -31,7 +31,7 @@ class QuantAxis extends AbstractAxis {
   }
 
   hasRules(): boolean {
-    return true
+    return this.data().length > 0
   }
 
   // Computations

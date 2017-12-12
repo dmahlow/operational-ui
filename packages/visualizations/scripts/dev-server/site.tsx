@@ -45,15 +45,15 @@ class Site extends React.Component<{}, {}> {
           color: "#0f0",
           yAxis: "y2"
         },
-        // {
-        //   key: "666569644:clicks2",
-        //   name: "Clicks2",
-        //   data: [],
-        //   dataFormat: ["string", "number"],
-        //   renderAs: ["line", "textlabels", "bars"],
-        //   color: "#0f0",
-        //   yAxis: "y2"
-        // }
+        {
+          key: "666569644:clicks2",
+          name: "Clicks2",
+          data: [],
+          dataFormat: ["string", "number"],
+          renderAs: ["line", "textlabels", "bars"],
+          color: "#f00",
+          yAxis: "y2"
+        }
       ],
       axes: {
         x1: {

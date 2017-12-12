@@ -39,7 +39,7 @@ var QuantAxis = /** @class */ (function (_super) {
         return quant_axis_utils_1.default.ruleClass(ruleValue, index, this.computed.ticks);
     };
     QuantAxis.prototype.hasRules = function () {
-        return true;
+        return this.data().length > 0;
     };
     // Computations
     // Update axis computations and ticks

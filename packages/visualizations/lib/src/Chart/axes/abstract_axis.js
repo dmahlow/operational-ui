@@ -79,7 +79,6 @@ var AbstractAxis = /** @class */ (function () {
         this.data().length > 0
             ? (this.drawn ? this.updateDraw() : this.initialDraw())
             : this.close();
-        this.stateWriter(["dimensions"], this.axisDimensions());
     };
     AbstractAxis.prototype.initialDraw = function () {
         // svg element
@@ -135,6 +134,8 @@ var AbstractAxis = /** @class */ (function () {
             .attr("transform", "translate(" + this.axisPosition().join(",") + ")");
         this.el.select("line." + styles.border)
             .call(d3_utils_1.setLineAttributes, this.border(), duration);
+        this.stateWriter(["drawn"], true);
+        this.stateWriter(["dimensions"], this.axisDimensions());
     };
     AbstractAxis.prototype.getAttributes = function () {
         var config = this.state.current.get("config"), scale = this.computed.scale, data = this.computed.ticks, tickOffset = config[this.name].tickOffset, isXAxis = this.orientation() === "x", unitTick = isXAxis ? data[0] : fp_1.last(data), format = this.tickFormatter(unitTick);

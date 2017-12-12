@@ -16,10 +16,12 @@ class Rules extends AbstractRules {
         break
       case "y":
         // Extend rules outside of the drawing area
-        const computed: IObject = this.state.current.get("computed")
-        const axisDimensions: IObject = computed.axes
-        coordinates.x10 = coordinates.x11 = axisDimensions.y1 ? axisDimensions.y1.dimensions.width / 2 : 0
-        coordinates.x20 = coordinates.x21 = computed.canvas.drawingContainerDims.width - (axisDimensions.y2 ? axisDimensions.y2.dimensions.width / 2 : 0)
+        const computed: IObject = this.state.current.get("computed"),
+          axisDimensions: IObject = computed.axes,
+          y1Width: number = axisDimensions.y1 && axisDimensions.y1.drawn ? axisDimensions.y1.dimensions.width : 0,
+          y2Width: number = axisDimensions.y2 && axisDimensions.y2.drawn ? axisDimensions.y2.dimensions.width : 0
+        coordinates.x10 = coordinates.x11 = y1Width / 2
+        coordinates.x20 = coordinates.x21 = computed.canvas.drawingContainerDims.width - y2Width / 2
         coordinates.y10 = coordinates.y20 = previousScale
         coordinates.y11 = coordinates.y21 = scale
         break
