@@ -150,6 +150,7 @@ class ProcessFlow {
         this.state.readOnly(),
         this.state.computedWriter(["axes"]),
         this.events,
+        this.canvas.elementFor("axes")
       )
       // focus: new Focus(
       //   this.state.readOnly(),

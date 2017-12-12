@@ -40,11 +40,7 @@ class Canvas extends AbstractDrawingCanvas {
     this.appendBackground()
     this.appendDrawingGroup()
 
-    let axes: [string, string] = ["y", "x"]
-    this.appendAxes(axes)
-    this.appendRules(axes)
-    this.elements.xRules.attr("clip-path", "url(#" + this.drawingClipDefinitionId() + ")")
-    this.elements.yRules.attr("clip-path", "url(#" + this.yRulesDefinitionId() + ")")
+    this.appendAxisElements()
     this.appendSeriesDrawingGroups(seriesElements)
     this.appendFocus()
     forEach((options: string[]): void => this.insertLegend(options[0], options[1]))(legendOptions)
@@ -70,6 +66,16 @@ class Canvas extends AbstractDrawingCanvas {
 
   seriesElements(): string[][] {
     return seriesElements
+  }
+
+  appendAxisElements(): void {
+    const axes: [string, string] = ["y", "x"]
+    let axesMap: IObject = {}
+    this.appendAxes(axes, axesMap)
+    this.appendRules(axes, axesMap)
+    axesMap.xRules.attr("clip-path", "url(#" + this.drawingClipDefinitionId() + ")")
+    axesMap.yRules.attr("clip-path", "url(#" + this.yRulesDefinitionId() + ")")
+    this.elMap.axes = axesMap
   }
 
   totalLegendHeight(): number {

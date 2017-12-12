@@ -5,13 +5,14 @@ var rules_1 = require("./axes/rules");
 var fp_1 = require("lodash/fp");
 var validAxes = ["x1", "x2", "y1", "y2"];
 var AxesManager = /** @class */ (function () {
-    function AxesManager(state, stateWriter, events) {
+    function AxesManager(state, stateWriter, events, elements) {
         this.axes = [];
         this.oldAxes = [];
         this.rules = {};
         this.state = state;
         this.stateWriter = stateWriter;
         this.events = events;
+        this.elements = elements;
     }
     AxesManager.prototype.checkValidity = function (name) {
         if (validAxes.indexOf(name) === -1) {
@@ -29,7 +30,7 @@ var AxesManager = /** @class */ (function () {
         var _this = this;
         this.oldAxes = this.axes;
         this.axes = [];
-        var axesOptions = this.state.current.get("accessors").data.axes(this.state.current.get("data")), elements = this.state.current.get("computed").canvas.elements;
+        var axesOptions = this.state.current.get("accessors").data.axes(this.state.current.get("data"));
         fp_1.forEach.convert({ cap: false })(function (axisOptions, key) {
             _this.checkValidity(key);
             if (!_this.isRequiredAxis(key)) {
@@ -38,7 +39,7 @@ var AxesManager = /** @class */ (function () {
             var existingAxisIndex = fp_1.findIndex({ name: key, type: axisOptions.type })(_this.oldAxes);
             _this.axes.push(existingAxisIndex > -1
                 ? _this.oldAxes[existingAxisIndex]
-                : new axis_1.default(_this.state, _this.subStateWriter(key), key, axisOptions, elements[key[0] + "Axes"]));
+                : new axis_1.default(_this.state, _this.subStateWriter(key), key, axisOptions, _this.elements[key[0] + "Axes"]));
             if (existingAxisIndex > -1) {
                 _this.oldAxes.splice(existingAxisIndex, 1);
             }
@@ -96,7 +97,7 @@ var AxesManager = /** @class */ (function () {
             if (axisWithRules) {
                 var rules = _this.rules[orientation];
                 if (!rules) {
-                    var element = _this.state.current.get("computed").canvas.elements[orientation + "Rules"];
+                    var element = _this.elements[orientation + "Rules"];
                     rules = _this.rules[orientation] = new rules_1.default(_this.state, orientation, element);
                 }
                 rules.draw(axisWithRules);

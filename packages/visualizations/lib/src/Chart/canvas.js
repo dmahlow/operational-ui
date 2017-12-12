@@ -40,11 +40,7 @@ var Canvas = /** @class */ (function (_super) {
         _this.appendYRulesClip();
         _this.appendBackground();
         _this.appendDrawingGroup();
-        var axes = ["y", "x"];
-        _this.appendAxes(axes);
-        _this.appendRules(axes);
-        _this.elements.xRules.attr("clip-path", "url(#" + _this.drawingClipDefinitionId() + ")");
-        _this.elements.yRules.attr("clip-path", "url(#" + _this.yRulesDefinitionId() + ")");
+        _this.appendAxisElements();
         _this.appendSeriesDrawingGroups(seriesElements);
         _this.appendFocus();
         fp_1.forEach(function (options) { return _this.insertLegend(options[0], options[1]); })(legendOptions);
@@ -68,6 +64,15 @@ var Canvas = /** @class */ (function (_super) {
     };
     Canvas.prototype.seriesElements = function () {
         return seriesElements;
+    };
+    Canvas.prototype.appendAxisElements = function () {
+        var axes = ["y", "x"];
+        var axesMap = {};
+        this.appendAxes(axes, axesMap);
+        this.appendRules(axes, axesMap);
+        axesMap.xRules.attr("clip-path", "url(#" + this.drawingClipDefinitionId() + ")");
+        axesMap.yRules.attr("clip-path", "url(#" + this.yRulesDefinitionId() + ")");
+        this.elMap.axes = axesMap;
     };
     Canvas.prototype.totalLegendHeight = function () {
         var computedLegends = this.state.current.get("computed").canvas.legends;

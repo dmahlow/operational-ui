@@ -61,15 +61,15 @@ abstract class DrawingCanvas extends Canvas {
     this.elements.background = this.el.append("rect").attr("class", styles.chartBackground).attr("x", 0).attr("y", 0)
   }
 
-  appendRules(axes: string[]): void {
+  appendRules(axes: string[], axesMap: IObject): void {
     forEach((axis: string): void => {
-      this.elements[axis + "Rules"] = this.elements.drawing.append("svg:g").attr("class", axis + "-rules-group")
+      axesMap[axis + "Rules"] = this.elements.drawing.append("svg:g").attr("class", axis + "-rules-group")
     })(axes)
   }
 
-  appendAxes(axes: string[]): void {
+  appendAxes(axes: string[], axesMap: IObject): void {
     forEach((axis: string): void => {
-      this.elements[axis + "Axes"] = this.elements.drawing.append("svg:g").attr("class", axis + "-axes-group")
+      axesMap[axis + "Axes"] = this.elements.drawing.append("svg:g").attr("class", axis + "-axes-group")
     })(axes)
   }
 

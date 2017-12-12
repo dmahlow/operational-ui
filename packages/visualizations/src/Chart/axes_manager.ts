@@ -9,16 +9,18 @@ const validAxes: string[] = ["x1", "x2", "y1", "y2"]
 class AxesManager {
 
   axes: Axis[] = []
+  elements: { [key: string]: TD3Selection }
   oldAxes: Axis[] = []
   rules: any = {}
   state: any
   stateWriter: TStateWriter
   events: IEvents
 
-  constructor(state: IState, stateWriter: TStateWriter, events: IEvents) {
+  constructor(state: IState, stateWriter: TStateWriter, events: IEvents, elements: { [key: string]: TD3Selection }) {
     this.state = state
     this.stateWriter = stateWriter
     this.events = events
+    this.elements = elements
   }
 
   checkValidity(name: string): void {
@@ -38,8 +40,7 @@ class AxesManager {
     this.oldAxes = this.axes
     this.axes = []
 
-    const axesOptions = this.state.current.get("accessors").data.axes(this.state.current.get("data")),
-      elements: IObject = this.state.current.get("computed").canvas.elements
+    const axesOptions = this.state.current.get("accessors").data.axes(this.state.current.get("data"))
 
     forEach.convert({ cap: false })((axisOptions: IObject, key: string): void => {
       this.checkValidity(key)
@@ -48,7 +49,7 @@ class AxesManager {
       this.axes.push(
         existingAxisIndex > -1
           ? this.oldAxes[existingAxisIndex]
-          : new Axis(this.state, this.subStateWriter(key), key, axisOptions, elements[key[0] + "Axes"])
+          : new Axis(this.state, this.subStateWriter(key), key, axisOptions, this.elements[key[0] + "Axes"])
       )
       if (existingAxisIndex > -1) {
         this.oldAxes.splice(existingAxisIndex, 1)
@@ -110,7 +111,7 @@ class AxesManager {
       if (axisWithRules) {
         let rules: Rules = this.rules[orientation]
         if (!rules) {
-          const element: TD3Selection = this.state.current.get("computed").canvas.elements[orientation + "Rules"]
+          const element: TD3Selection = this.elements[orientation + "Rules"]
           rules = this.rules[orientation] = new Rules(this.state, orientation, element)
         }
         rules.draw(axisWithRules)

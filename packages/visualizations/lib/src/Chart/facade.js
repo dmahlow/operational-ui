@@ -118,7 +118,7 @@ var ProcessFlow = /** @class */ (function () {
     ProcessFlow.prototype.initializeComponents = function () {
         this.components = {
             legend: new legend_manager_1.default(this.state.readOnly(), this.state.computedWriter(["legend"]), this.events, this.canvas.elementFor("legend")),
-            axes: new axes_manager_1.default(this.state.readOnly(), this.state.computedWriter(["axes"]), this.events)
+            axes: new axes_manager_1.default(this.state.readOnly(), this.state.computedWriter(["axes"]), this.events, this.canvas.elementFor("axes"))
             // focus: new Focus(
             //   this.state.readOnly(),
             //   this.state.computedWriter(["focus"]),

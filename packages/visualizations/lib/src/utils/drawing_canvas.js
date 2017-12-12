@@ -62,16 +62,16 @@ var DrawingCanvas = /** @class */ (function (_super) {
     DrawingCanvas.prototype.appendBackground = function () {
         this.elements.background = this.el.append("rect").attr("class", styles.chartBackground).attr("x", 0).attr("y", 0);
     };
-    DrawingCanvas.prototype.appendRules = function (axes) {
+    DrawingCanvas.prototype.appendRules = function (axes, axesMap) {
         var _this = this;
         fp_1.forEach(function (axis) {
-            _this.elements[axis + "Rules"] = _this.elements.drawing.append("svg:g").attr("class", axis + "-rules-group");
+            axesMap[axis + "Rules"] = _this.elements.drawing.append("svg:g").attr("class", axis + "-rules-group");
         })(axes);
     };
-    DrawingCanvas.prototype.appendAxes = function (axes) {
+    DrawingCanvas.prototype.appendAxes = function (axes, axesMap) {
         var _this = this;
         fp_1.forEach(function (axis) {
-            _this.elements[axis + "Axes"] = _this.elements.drawing.append("svg:g").attr("class", axis + "-axes-group");
+            axesMap[axis + "Axes"] = _this.elements.drawing.append("svg:g").attr("class", axis + "-axes-group");
         })(axes);
     };
     DrawingCanvas.prototype.appendSeriesDrawingGroups = function (seriesElements) {
