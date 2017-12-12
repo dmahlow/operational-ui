@@ -33,11 +33,6 @@ var AbstractAxis = /** @class */ (function () {
     AbstractAxis.prototype.compute = function (args) {
         this.previous = this.computed;
         var computed = {};
-        // if (this.discrete) {
-        //   let barSeries: any[] = this.prepareBarSeries()
-        //   computed.numberOfBars = barSeries.length
-        //   computed.tickOffsetRequired = this.state.series.tickOffsetRequired()
-        // }
         computed.range = this.computeRange();
         computed.rangeDirection = this.computeRangeDirection(computed.range);
         computed.width = this.computeWidth(computed.range);
@@ -49,13 +44,7 @@ var AbstractAxis = /** @class */ (function () {
         this.stateWriter(["computed"], this.computed);
     };
     AbstractAxis.prototype.data = function () {
-        return this.state.current.get("computed").series.computed[this.name].data;
-    };
-    AbstractAxis.prototype.series = function () {
-        return this.state.current.get("computed").series.computed[this.name].series;
-    };
-    AbstractAxis.prototype.hasFlags = function () {
-        return this.state.current.get("computed").series.computed[this.name].hasFlags;
+        return this.state.current.get("computed").series.axes[this.name].data;
     };
     AbstractAxis.prototype.orientation = function () {
         return this.name.match(/x|y/)[0];

@@ -59,7 +59,7 @@ var AxesManager = /** @class */ (function () {
         });
     };
     AxesManager.prototype.isRequiredAxis = function (axisName) {
-        var requiredAxes = this.state.current.get("computed").series.requiredAxes;
+        var requiredAxes = fp_1.keys(this.state.current.get("computed").series.axes);
         return requiredAxes.indexOf(axisName) > -1;
     };
     AxesManager.prototype.draw = function () {

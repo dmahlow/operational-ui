@@ -60,7 +60,7 @@ class OrdinalAxis extends AbstractAxis {
       computed.range[1] + computed.halfTickWidth
     ]
 
-    const numberOfBars = this.state.current.get("computed").series.computed[this.name].numberOfBars
+    const numberOfBars = this.state.current.get("computed").series.axes[this.name].barSeries.length
     if (numberOfBars > 0) {
       computed.barSeries = this.computeBarSeries(computed)    }
 
@@ -69,7 +69,7 @@ class OrdinalAxis extends AbstractAxis {
   }
 
   computeBarSeries(computed: IObject): void {
-    let barSeries = this.state.current.get("computed").series.computed[this.name].barSeries
+    let barSeries = this.state.current.get("computed").series.axes[this.name].barSeries
     computed.barOffsetScale = this.computeBarOffset(barSeries, computed.tickWidth)
     this.computeBarDimension(computed, barSeries)
     return barSeries

@@ -27,108 +27,12 @@ class SeriesManager {
 
     forEach((series: any) => series.key = series.key || uniqueId("series"))(dataSeries)
     const seriesKeys: string[] = map((series: any): string => series.key)(dataSeries)
-    let computed: IObject = {}
-
     this.removeAllExcept(seriesKeys)
 
     forEach(this.prepareSeries.bind(this))(dataSeries)
-    forEach(this.updateComputed(computed).bind(this))(this.series)
-
-    this.stateWriter("requiredAxes", this.requiredAxes())
-    this.stateWriter("hasData", this.hasData())
-    this.stateWriter("computed", computed)
+    this.stateWriter("axes", this.computeAxisInformation())
     this.stateWriter("dataForLegend", this.dataForLegend())
-
     this.addMissingDatapoints()
-  }
-
-  hasData(): boolean {
-    return some(result("hasData"))(this.series)
-  }
-
-  prepareSeries(attributes: any): void {
-    this.updateOrCreate(attributes)
-    if (attributes.data) {
-      this.get(attributes.key).setData(attributes.data, attributes.total)
-    }
-  }
-
-  updateOrCreate(attributes: any): void {
-    let series: any = this.get(attributes.key)
-    series != null ? series.update(attributes) : this.create(attributes)
-  }
-
-  create(attributes: any): void {
-    this.series[attributes.key] = new Series(this.state, attributes, this.state.current.get("accessors").series)
-  }
-
-  // Some renderers have width and are centred on ticks, so ticks need to be offset.
-  tickOffsetRequired(series: Series, axis: string): boolean {
-    return series.dataFormat()[series.dataIndeces()[axis[0]]] !== "number" &&
-      series.renderAs().indexOf("bars") > -1 ||
-      series.renderAs().indexOf("bar_line") > -1
-  }
-
-  hasBars(series: Series, axis: string): boolean {
-    return series.dataFormat()[series.dataIndeces()[axis[0]]] !== "number" &&
-      series.renderAs().indexOf("bars") > -1
-  }
-
-  updateComputed(computed: IObject) {
-    return (series: Series): void => {
-      const axes: any = this.state.current.get("accessors").data.axes(this.state.current.get("data"))
-      reduce((memo: IObject, axis: string): IObject => {
-        // Check compatible
-        series.checkCompatible(axis, axes[axis].type)
-
-        memo[axis] = memo[axis] || {
-          data: [],
-          series: [],
-          hasFlags: false,
-          // tickOffsetRequired: this.tickOffsetRequired(series, axis),
-          numberOfBars: 0,
-          barSeries: []
-        }
-
-        memo[axis].data = flow(
-          concat(memo[axis].data),
-          uniq(),
-          sortBy((x: any) => x),
-        )(series.dataForAxis(axis))
-
-        memo[axis].series.push(series.key())
-
-        memo[axis].numberOfBars += this.tickOffsetRequired(series, axis) ? 1 : 0
-
-        if (this.hasBars(series, axis)) {
-          const i: number = memo[axis].barSeries.length
-          memo[axis].barSeries.push({ key: series.key(), index: i })
-        }
-
-        return memo
-      }, computed)([series.xAxis(), series.yAxis()])
-    }
-  }
-
-  addMissingDatapoints(): void {
-    forEach((axis: string): void => {
-      const series: Series[] = this.seriesForAxes()[axis]
-      if (series.length > 1 && ["ordinal", "time"].indexOf(this.state.current.get("data").axes[axis].type) > -1) {
-        const requiredValues: any[] = flow(
-          map((d: Series): any[] => d.dataForAxis(axis)),
-          flatten,
-          uniq,
-          sortBy((x: any) => x)
-        )(series)
-        forEach((d: Series): void => {
-          d.addMissingDatapoints(axis, requiredValues)
-        })(series)
-      }
-    })(this.required)
-  }
-
-  get(sid: string): any {
-    return this.series[sid]
   }
 
   remove(sid: string): void {
@@ -153,16 +57,68 @@ class SeriesManager {
     )(this.series)
   }
 
-  draw(): void {
-    // Clean up any old stuff
-    invoke("close")(this.oldSeries)
-    this.oldSeries = []
+  get(sid: string): any {
+    return this.series[sid]
+  }
 
-    // Draw the new stuff
-    forEach((series: Series): void => {
-      series.computeAxisMappings()
-      series.draw()
-    })(this.series)
+  prepareSeries(attributes: any): void {
+    this.updateOrCreate(attributes)
+    if (attributes.data) {
+      this.get(attributes.key).setData(attributes.data, attributes.total)
+    }
+  }
+
+  updateOrCreate(attributes: any): void {
+    let series: any = this.get(attributes.key)
+    series != null ? series.update(attributes) : this.create(attributes)
+  }
+
+  create(attributes: any): void {
+    this.series[attributes.key] = new Series(this.state, attributes, this.state.current.get("accessors").series)
+  }
+
+  requiredAxes(): string[] {
+    this.required = uniq(
+      reduce((memo: string[], series: Series): string[] => {
+        memo.push(series.xAxis(), series.yAxis())
+        return memo
+      }, [])(this.series)
+    )
+    return this.required
+  }
+
+  hasBars(series: Series, axis: string): boolean {
+    return series.dataFormat()[series.dataIndeces()[axis[0]]] !== "number" &&
+      series.renderAs().indexOf("bars") > -1
+  }
+
+  computeAxisInformation(): IObject {
+    const axes: any = this.state.current.get("accessors").data.axes(this.state.current.get("data"))
+    return reduce((memo: IObject, axisName: string): IObject => {
+      const seriesForAxis: Series[] = filter((s: Series): boolean => {
+        return s.xAxis() === axisName || s.yAxis() === axisName
+      })(this.series)
+
+      memo[axisName] = {}
+      memo[axisName].orientation = axisName[0]
+      memo[axisName].series = map((s: Series): string => s.key())(seriesForAxis)
+      memo[axisName].data = flow(
+        map((s: Series): any[] => s.dataForAxis(axisName)),
+        flatten,
+        uniq,
+        sortBy((x: any): any => x)
+      )(seriesForAxis)
+      memo[axisName].barSeries = flow(
+        filter((s: Series): boolean => this.hasBars(s, axisName)),
+        map.convert({ cap: false })((s: Series, i: number): IObject => {
+          return {
+            key: s.key(),
+            index: i
+          }
+        })
+      )(seriesForAxis)
+      return memo
+    }, {})(this.requiredAxes())
   }
 
   getLegendData(axis?: string): IObject[] {
@@ -196,14 +152,21 @@ class SeriesManager {
     return data
   }
 
-  requiredAxes(): string[] {
-    this.required = uniq(
-      reduce((memo: string[], series: Series): string[] => {
-        memo.push(series.xAxis(), series.yAxis())
-        return memo
-      }, [])(this.series)
-    )
-    return this.required
+  addMissingDatapoints(): void {
+    forEach((axis: string): void => {
+      const series: Series[] = this.seriesForAxes()[axis]
+      if (series.length > 1 && ["ordinal", "time"].indexOf(this.state.current.get("data").axes[axis].type) > -1) {
+        const requiredValues: any[] = flow(
+          map((d: Series): any[] => d.dataForAxis(axis)),
+          flatten,
+          uniq,
+          sortBy((x: any) => x)
+        )(series)
+        forEach((d: Series): void => {
+          d.addMissingDatapoints(axis, requiredValues)
+        })(series)
+      }
+    })(this.required)
   }
 
   seriesForAxes(): IObject {
@@ -213,9 +176,20 @@ class SeriesManager {
         return series.xAxis() === axis || series.yAxis() === axis
       })(this.series)
       seriesForAxes[axis] = axisSeries
-    })(this.state.current.get("computed").series.requiredAxes)
-    this.stateWriter("seriesForAxes", seriesForAxes)
+    })(this.requiredAxes())
     return seriesForAxes
+  }
+
+  draw(): void {
+    // Clean up any old stuff
+    invoke("close")(this.oldSeries)
+    this.oldSeries = []
+
+    // Draw the new stuff
+    forEach((series: Series): void => {
+      series.computeAxisMappings()
+      series.draw()
+    })(this.series)
   }
 }
 

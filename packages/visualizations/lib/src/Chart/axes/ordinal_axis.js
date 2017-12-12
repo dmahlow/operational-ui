@@ -62,7 +62,7 @@ var OrdinalAxis = /** @class */ (function (_super) {
             computed.range[0] + computed.halfTickWidth,
             computed.range[1] + computed.halfTickWidth
         ];
-        var numberOfBars = this.state.current.get("computed").series.computed[this.name].numberOfBars;
+        var numberOfBars = this.state.current.get("computed").series.axes[this.name].barSeries.length;
         if (numberOfBars > 0) {
             computed.barSeries = this.computeBarSeries(computed);
         }
@@ -70,7 +70,7 @@ var OrdinalAxis = /** @class */ (function (_super) {
         computed.ticks = computed.domain;
     };
     OrdinalAxis.prototype.computeBarSeries = function (computed) {
-        var barSeries = this.state.current.get("computed").series.computed[this.name].barSeries;
+        var barSeries = this.state.current.get("computed").series.axes[this.name].barSeries;
         computed.barOffsetScale = this.computeBarOffset(barSeries, computed.tickWidth);
         this.computeBarDimension(computed, barSeries);
         return barSeries;

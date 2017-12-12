@@ -65,7 +65,7 @@ declare namespace fp {
     /**
      * Returns a new list, constructed by applying the supplied function to every element of the supplied list.
      */
-    map<T>(fn: Function): (list: T[]) => any[]
+    // map<T>(fn: Function): (list: T[]) => any[]
 
     /**
      * Returns `true` if the specified item is somewhere in the list, `false` otherwise.
@@ -175,6 +175,7 @@ declare namespace fp {
     isString: any
     isUndefined: any
     last: any
+    map: any
     merge: any
     pluck: any
     result: any

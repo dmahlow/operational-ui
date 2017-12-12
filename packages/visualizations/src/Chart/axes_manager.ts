@@ -2,7 +2,7 @@ import AbstractAxis from "./axes/abstract_axis"
 import Axis from "./axes/axis"
 import Rules from "./axes/rules"
 import { IObject, IState, TStateWriter, IEvents, TD3Selection } from "./typings"
-import { compact, filter, find, findIndex, flow, forEach, invoke, reduce, sortBy } from "lodash/fp"
+import { compact, filter, find, findIndex, flow, forEach, invoke, keys, reduce, sortBy } from "lodash/fp"
 
 const validAxes: string[] = ["x1", "x2", "y1", "y2"]
 
@@ -73,7 +73,7 @@ class AxesManager {
   }
 
   isRequiredAxis(axisName: string): boolean {
-    const requiredAxes: string[] = this.state.current.get("computed").series.requiredAxes
+    const requiredAxes: string[] = keys(this.state.current.get("computed").series.axes)
     return requiredAxes.indexOf(axisName) > -1
   }
 

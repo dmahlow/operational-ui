@@ -53,12 +53,6 @@ abstract class AbstractAxis {
 
     let computed: any = {}
 
-    // if (this.discrete) {
-    //   let barSeries: any[] = this.prepareBarSeries()
-    //   computed.numberOfBars = barSeries.length
-    //   computed.tickOffsetRequired = this.state.series.tickOffsetRequired()
-    // }
-
     computed.range = this.computeRange()
     computed.rangeDirection = this.computeRangeDirection(computed.range)
     computed.width = this.computeWidth(computed.range)
@@ -72,15 +66,7 @@ abstract class AbstractAxis {
   }
 
   data(): any[] {
-    return this.state.current.get("computed").series.computed[this.name].data
-  }
-
-  series(): any[] {
-    return this.state.current.get("computed").series.computed[this.name].series
-  }
-
-  hasFlags(): boolean {
-    return this.state.current.get("computed").series.computed[this.name].hasFlags
+    return this.state.current.get("computed").series.axes[this.name].data
   }
 
   orientation(): string {
