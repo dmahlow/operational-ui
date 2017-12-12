@@ -68,7 +68,7 @@ export interface IConfig {
   maxLegendRatio: number
   maxLegendWidth: number
   minBarTickWidth: {
-    ord: number
+    ordinal: number
   }
   minBarWidth: number
   minChartWithLegend: number

@@ -47,7 +47,7 @@ class Line extends AbstractRenderer {
       })
   }
 
-  prepareData(axis: any, scale: any): any[] {
+  prepareData(axis: any, scale: any, name: string): any[] {
     // The d3 stack layout considers missing data to be = 0, which automatically closes gaps.
     // If the gaps shouldn't be closed, the relevant values need to be reset to undefined.
     if (this.series.stacked && !this.options.closeGaps) {
@@ -60,7 +60,10 @@ class Line extends AbstractRenderer {
     // return !this.options.closeGaps && axis.options.addMissingDatapoints != null
     //   ? axis.axis.addMissingDatapoints(this.series.dataPoints, axis.index)
     //   : sortBy(scale)(this.series.dataPoints)
-    return sortBy(scale)(this.series.dataPoints)
+    return flow(
+      filter(this.dataFilter.bind(this)(axis, scale, name)),
+      sortBy(scale)
+    )(this.series.dataPoints)
   }
 
   color(ctx: any): string {
@@ -68,7 +71,7 @@ class Line extends AbstractRenderer {
   }
 
   data(x: any, y: any): any {
-    return this.yIsBaseline() ? [this.prepareData(this.x, x)] : [this.prepareData(this.y, y)]
+    return this.yIsBaseline() ? [this.prepareData(this.x, x, "x")] : [this.prepareData(this.y, y, "y")]
   }
 
   getAttributes(x: (d: any) => number, y: (d: any) => number, baseline: number): any {

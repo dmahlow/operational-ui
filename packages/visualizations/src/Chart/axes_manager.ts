@@ -38,22 +38,22 @@ class AxesManager {
     this.oldAxes = this.axes
     this.axes = []
 
-    const axesData = this.state.current.get("accessors").data.axes(this.state.current.get("data")),
+    const axesOptions = this.state.current.get("accessors").data.axes(this.state.current.get("data")),
       elements: IObject = this.state.current.get("computed").canvas.elements
 
-    forEach.convert({ cap: false })((axisData: IObject, key: string): void => {
+    forEach.convert({ cap: false })((axisOptions: IObject, key: string): void => {
       this.checkValidity(key)
       if (!this.isRequiredAxis(key)) { return }
-      const existingAxisIndex: number = findIndex({ name: key, type: axisData.type })(this.oldAxes)
+      const existingAxisIndex: number = findIndex({ name: key, type: axisOptions.type })(this.oldAxes)
       this.axes.push(
         existingAxisIndex > -1
           ? this.oldAxes[existingAxisIndex]
-          : new Axis(this.state, this.subStateWriter(key), key, axisData, elements[key[0] + "Axes"])
+          : new Axis(this.state, this.subStateWriter(key), key, axisOptions, elements[key[0] + "Axes"])
       )
       if (existingAxisIndex > -1) {
         this.oldAxes.splice(existingAxisIndex, 1)
       }
-    })(axesData)
+    })(axesOptions)
 
     forEach(invoke("close"))(this.oldAxes)
 

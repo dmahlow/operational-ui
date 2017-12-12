@@ -7,7 +7,7 @@ import { scaleBand as d3ScaleBand } from "d3-scale"
 import { range as d3Range } from "d3-array"
 import { setLineAttributes, setTextAttributes } from "../../utils/d3_utils"
 import { IConfig, IObject, IState, TStateWriter, TD3Selection } from "../typings"
-import { defaults, last, map, reduce } from "lodash/fp"
+import { defaults, forEach, last, map, reduce } from "lodash/fp"
 import * as styles from "./styles"
 
 let sideMapping: {} = {
@@ -58,9 +58,12 @@ abstract class AbstractAxis {
     //   computed.numberOfBars = barSeries.length
     //   computed.tickOffsetRequired = this.state.series.tickOffsetRequired()
     // }
+
     computed.range = this.computeRange()
     computed.rangeDirection = this.computeRangeDirection(computed.range)
     computed.width = this.computeWidth(computed.range)
+    computed.baseline = this.baseline
+    computed.discrete = this.discrete
 
     this.computeAxisInformation(computed, args)
     this.computed = computed
@@ -257,14 +260,20 @@ abstract class AbstractAxis {
     return Math.abs(range[0] - range[1])
   }
 
-  computeBarOffset(tickWidth: number, numberOfBars: number): any {
-    let innerPadding: number = 0
-    let outerPadding: number = numberOfBars > 1 ? 0.1 : 0
-    return d3ScaleBand()
-      .domain(map(String)(d3Range(numberOfBars)))
-      .range([0, tickWidth])
-      .paddingInner(innerPadding)
-      .paddingOuter(outerPadding)
+  computeBarOffset(barSeries: IObject[], tickWidth: number): any {
+    const innerPadding: number = 0,
+      outerPadding: number = barSeries.length > 1 ? 0.1 : 0,
+      scale = d3ScaleBand()
+        .domain(map(String)(d3Range(barSeries.length)))
+        .range([0, tickWidth])
+        .paddingInner(innerPadding)
+        .paddingOuter(outerPadding)
+
+    forEach((series: IObject): void => {
+      series.barOffset = scale(series.index)
+    })(barSeries)
+
+    return scale
   }
 
   adjustRange(): void {

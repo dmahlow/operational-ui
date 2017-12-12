@@ -29,20 +29,20 @@ var AxesManager = /** @class */ (function () {
         var _this = this;
         this.oldAxes = this.axes;
         this.axes = [];
-        var axesData = this.state.current.get("accessors").data.axes(this.state.current.get("data")), elements = this.state.current.get("computed").canvas.elements;
-        fp_1.forEach.convert({ cap: false })(function (axisData, key) {
+        var axesOptions = this.state.current.get("accessors").data.axes(this.state.current.get("data")), elements = this.state.current.get("computed").canvas.elements;
+        fp_1.forEach.convert({ cap: false })(function (axisOptions, key) {
             _this.checkValidity(key);
             if (!_this.isRequiredAxis(key)) {
                 return;
             }
-            var existingAxisIndex = fp_1.findIndex({ name: key, type: axisData.type })(_this.oldAxes);
+            var existingAxisIndex = fp_1.findIndex({ name: key, type: axisOptions.type })(_this.oldAxes);
             _this.axes.push(existingAxisIndex > -1
                 ? _this.oldAxes[existingAxisIndex]
-                : new axis_1.default(_this.state, _this.subStateWriter(key), key, axisData, elements[key[0] + "Axes"]));
+                : new axis_1.default(_this.state, _this.subStateWriter(key), key, axisOptions, elements[key[0] + "Axes"]));
             if (existingAxisIndex > -1) {
                 _this.oldAxes.splice(existingAxisIndex, 1);
             }
-        })(axesData);
+        })(axesOptions);
         fp_1.forEach(fp_1.invoke("close"))(this.oldAxes);
         this.eachXY(function (axes) {
             // only if both axes are used by series do they need to be aligned

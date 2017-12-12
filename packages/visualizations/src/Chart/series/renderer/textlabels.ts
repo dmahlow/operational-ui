@@ -1,7 +1,8 @@
 import AbstractRenderer from "./abstract_renderer"
 import TextLabelFormat from "../../../utils/textlabel_formatter"
 import { setTextAttributes } from "../../../utils/d3_utils"
-import { extend, filter, isFunction } from "lodash/fp"
+import { extend, filter, flow, isFunction } from "lodash/fp"
+import { IObject } from "../../typings"
 
 function guardNaN(funcOrConst: any): (d: any, i: number) => number {
   let func: any = isFunction(funcOrConst) ? funcOrConst : () => funcOrConst
@@ -57,7 +58,14 @@ class TextLabels extends AbstractRenderer {
   }
 
   data(x: any, y: any): any {
-    return filter((d: any): boolean => d[1] != null)(this.series.dataPoints)
+    return this.yIsBaseline() ? this.prepareData(this.x, x, "x") : this.prepareData(this.y, y, "y")
+  }
+
+  prepareData(axis: IObject, scale: any, name: string): any[] {
+    return flow(
+      filter(this.dataFilter.bind(this)(axis, scale, name)),
+      filter((d: any): boolean => d[1] != null),
+    )(this.series.dataPoints)
   }
 
   getAttributes(x: (d: any) => number, y: (d: any) => number, baseline: number): any {

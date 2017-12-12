@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // import Area from "./area"
 // import BarLine from "./bar_line"
-// import Bars from "./bars"
+var bars_1 = require("./bars");
 // import EventFlag from "./event_flag"
 var line_1 = require("./line");
 // import Points from "./points"
@@ -16,8 +16,8 @@ var Renderer = /** @class */ (function () {
             //   return new Area(state, series, options)
             // case "bar_line":
             //   return new BarLine(state, series, options)
-            // case "bars":
-            //   return new Bars(state, series, options)
+            case "bars":
+                return new bars_1.default(state, series, el, options);
             // case "event_flag":
             //   return new EventFlag(state, series, options)
             case "line":

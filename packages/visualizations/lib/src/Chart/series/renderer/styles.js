@@ -19,6 +19,17 @@ var textlabelStyle = {
         fill: "#333"
     }
 };
+var barsStyle = {
+    "& rect": {
+        opacity: "0.8",
+        fill: "none",
+        shapeRendering: "crispedges",
+        "&.hover": {
+            opacity: "1"
+        }
+    }
+};
 exports.line = glamor_1.css(lineStyle).toString();
 exports.textlabels = glamor_1.css(textlabelStyle).toString();
+exports.bars = glamor_1.css(barsStyle).toString();
 //# sourceMappingURL=styles.js.map

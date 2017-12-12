@@ -48,6 +48,10 @@ var AbstractRenderer = /** @class */ (function () {
                 _this.baseline = axis;
                 _this.baseline.axis = key;
             }
+            if (axis.computed.discrete) {
+                _this.discrete = axis;
+                _this.discrete.axis = key;
+            }
         })(computedAxes);
         this.x = computedAxes[this.series.xAxis()].computed;
         this.y = computedAxes[this.series.yAxis()].computed;
@@ -77,6 +81,12 @@ var AbstractRenderer = /** @class */ (function () {
         var baseline = this.baseline.computed.baseline;
         return [x, y, baseline];
     };
+    AbstractRenderer.prototype.dataFilter = function (axis, scale, name) {
+        var index = this.series.dataIndeces()[name];
+        return axis.discrete
+            ? function (d) { return axis.domain.indexOf(d[index]) > -1; }
+            : function (d) { return d[index] > axis.domain[0] && d[index] < axis.domain[1]; };
+    };
     AbstractRenderer.prototype.enterSelection = function (data, attributes) {
         this.el
             .select("g." + styles[this.type])
@@ -90,10 +100,13 @@ var AbstractRenderer = /** @class */ (function () {
     };
     AbstractRenderer.prototype.transitionSelection = function (data, attributes, duration, onTransitionEnd) {
         if (onTransitionEnd === void 0) { onTransitionEnd = undefined; }
-        this.el
+        var selection = this.el
             .select("g." + styles[this.type])
-            .selectAll(this.accessor)
-            .data(data, this.key)
+            .selectAll(this.accessor);
+        selection.enter().merge(selection)
+            .transition()
+            .duration(duration)
+            .ease(d3_ease_1.easeLinear)
             .call(this.setAttributes, attributes, this, duration, onTransitionEnd);
         // .each("end", onTransitionEnd)
     };

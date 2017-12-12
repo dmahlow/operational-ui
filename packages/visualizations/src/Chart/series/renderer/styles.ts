@@ -20,5 +20,17 @@ const textlabelStyle = {
   }
 }
 
+const barsStyle = {
+  "& rect": {
+    opacity: "0.8",
+    fill: "none",
+    shapeRendering: "crispedges",
+    "&.hover": {
+      opacity: "1"
+    }
+  }
+}
+
 export const line = css(lineStyle).toString()
 export const textlabels = css(textlabelStyle).toString()
+export const bars = css(barsStyle).toString()

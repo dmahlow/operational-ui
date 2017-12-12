@@ -1,10 +1,11 @@
 import Series from "./series/series"
 import { concat, filter, flatten, flow, forEach, invoke, isArray, keys, map, reduce, result, some, sortBy, uniqueId, uniq } from "lodash/fp"
-import { IEvents, IState, IObject, TStateWriter, TD3Selection } from "./typings"
+import { IEvents, ISeries, IState, IObject, TStateWriter, TD3Selection } from "./typings"
 
 class SeriesManager {
   el: TD3Selection
   oldSeries: any = []
+  required: string[]
   series: any = {}
   state: IState
   stateWriter: TStateWriter
@@ -32,22 +33,17 @@ class SeriesManager {
 
     forEach(this.prepareSeries.bind(this))(dataSeries)
     forEach(this.updateComputed(computed).bind(this))(this.series)
-    this.addMissingDatapoints()
 
-    this.stateWriter("series", this.series)
-    this.stateWriter("oldSeries", this.oldSeries)
+    this.stateWriter("requiredAxes", this.requiredAxes())
     this.stateWriter("hasData", this.hasData())
     this.stateWriter("computed", computed)
-    this.exportData()
+    this.stateWriter("dataForLegend", this.dataForLegend())
+
+    this.addMissingDatapoints()
   }
 
   hasData(): boolean {
     return some(result("hasData"))(this.series)
-  }
-
-  // @TODO Move to individual series?
-  exportData(): void {
-    this.multipleAxes()
   }
 
   prepareSeries(attributes: any): void {
@@ -66,6 +62,18 @@ class SeriesManager {
     this.series[attributes.key] = new Series(this.state, attributes, this.state.current.get("accessors").series)
   }
 
+  // Some renderers have width and are centred on ticks, so ticks need to be offset.
+  tickOffsetRequired(series: Series, axis: string): boolean {
+    return series.dataFormat()[series.dataIndeces()[axis[0]]] !== "number" &&
+      series.renderAs().indexOf("bars") > -1 ||
+      series.renderAs().indexOf("bar_line") > -1
+  }
+
+  hasBars(series: Series, axis: string): boolean {
+    return series.dataFormat()[series.dataIndeces()[axis[0]]] !== "number" &&
+      series.renderAs().indexOf("bars") > -1
+  }
+
   updateComputed(computed: IObject) {
     return (series: Series): void => {
       const axes: any = this.state.current.get("accessors").data.axes(this.state.current.get("data"))
@@ -77,7 +85,9 @@ class SeriesManager {
           data: [],
           series: [],
           hasFlags: false,
-          tickOffsetRequired: false
+          // tickOffsetRequired: this.tickOffsetRequired(series, axis),
+          numberOfBars: 0,
+          barSeries: []
         }
 
         memo[axis].data = flow(
@@ -87,27 +97,34 @@ class SeriesManager {
         )(series.dataForAxis(axis))
 
         memo[axis].series.push(series.key())
+
+        memo[axis].numberOfBars += this.tickOffsetRequired(series, axis) ? 1 : 0
+
+        if (this.hasBars(series, axis)) {
+          const i: number = memo[axis].barSeries.length
+          memo[axis].barSeries.push({ key: series.key(), index: i })
+        }
+
         return memo
       }, computed)([series.xAxis(), series.yAxis()])
     }
   }
 
   addMissingDatapoints(): void {
-    const requiredAxes: string[] = this.requiredAxes()
     forEach((axis: string): void => {
       const series: Series[] = this.seriesForAxes()[axis]
       if (series.length > 1 && ["ordinal", "time"].indexOf(this.state.current.get("data").axes[axis].type) > -1) {
         const requiredValues: any[] = flow(
-          map((s: Series): any[] => s.dataForAxis(axis)),
+          map((d: Series): any[] => d.dataForAxis(axis)),
           flatten,
           uniq,
           sortBy((x: any) => x)
         )(series)
-        forEach((s: Series): void => {
-          s.addMissingDatapoints(axis, requiredValues)
+        forEach((d: Series): void => {
+          d.addMissingDatapoints(axis, requiredValues)
         })(series)
       }
-    })(requiredAxes)
+    })(this.required)
   }
 
   get(sid: string): any {
@@ -142,42 +159,63 @@ class SeriesManager {
     this.oldSeries = []
 
     // Draw the new stuff
-    forEach(invoke("draw"))(this.series)
+    forEach((series: Series): void => {
+      series.computeAxisMappings()
+      series.draw()
+    })(this.series)
   }
 
-  multipleAxes(): void {
+  getLegendData(axis?: string): IObject[] {
+    let series: ISeries[]
+    if (axis) {
+      series = filter((d: ISeries): boolean => {
+        return d.yAxis() === axis || d.xAxis() === axis && !d.hideInLegend()
+      })(this.series)
+    }
+    return map((d: ISeries): IObject => d.legendData())(series || this.series)
+  }
+
+  dataForLegend(): IObject {
+    let data: IObject = {
+      top: { left: [], right: [] },
+      bottom: { left: [] }
+    }
+
     const xAxes: string[] = uniq(map((series: Series) => series.xAxis())(this.series)),
       yAxes: string[] = uniq(map((series: Series) => series.yAxis())(this.series))
-      if (yAxes.length > 1) {
-        this.stateWriter("multipleAxes", "y")
-      }
-      if (xAxes.length > 1) {
-        this.stateWriter("multipleAxes", "x")
-      }
+
+    if (yAxes.length > 1) {
+      data.top.left = this.getLegendData("y1")
+      data.top.right = this.getLegendData("y2")
+    } else if (xAxes.length > 1) {
+      data.top.left = this.getLegendData("x2")
+      data.bottom.left = this.getLegendData("x1")
+    } else {
+      data.top.left = this.getLegendData()
+    }
+    return data
   }
 
   requiredAxes(): string[] {
-    const required: string[] = uniq(
+    this.required = uniq(
       reduce((memo: string[], series: Series): string[] => {
-        memo.push(series.xAxis())
-        memo.push(series.yAxis())
+        memo.push(series.xAxis(), series.yAxis())
         return memo
       }, [])(this.series)
     )
-    this.stateWriter("requiredAxes", required)
-    return required
+    return this.required
   }
 
   seriesForAxes(): IObject {
-    const axes: IObject = {}
+    const seriesForAxes: IObject = {}
     forEach((axis: string): void => {
       const axisSeries: Series[] = filter((series: Series): boolean => {
         return series.xAxis() === axis || series.yAxis() === axis
       })(this.series)
-      axes[axis] = axisSeries
+      seriesForAxes[axis] = axisSeries
     })(this.state.current.get("computed").series.requiredAxes)
-    this.stateWriter("seriesForAxes", axes)
-    return axes
+    this.stateWriter("seriesForAxes", seriesForAxes)
+    return seriesForAxes
   }
 }
 

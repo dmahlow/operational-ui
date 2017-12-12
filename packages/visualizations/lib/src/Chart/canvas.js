@@ -17,7 +17,7 @@ var fp_1 = require("lodash/fp");
 var seriesElements = [
     // ["area", "drawing_clip"],
     // ["range", "drawing_clip"],
-    // ["bars", "drawing_clip"],
+    ["bars", "drawing_clip"],
     // ["bar_line", "drawing_clip"],
     // ["event_flag", "drawing_clip"],
     ["line", "drawing_clip"],

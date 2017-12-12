@@ -14,18 +14,18 @@ var validators = {
     object: fp_1.isObject,
     string: function () { return true; }
 };
-// Simple function to compute a hash from a string
-// Use this for caching (checking whether something changed) etc.
-function hashString(string) {
-    return fp_1.reduce(function (memo, char) {
-        memo = ((memo << 5) - memo) + char.charCodeAt(0);
-        return memo & memo;
-    }, 0)(string.split(""));
-}
-// hash a JSON stringified object
-function hashObject(obj) {
-    return hashString(JSON.stringify(obj));
-}
+// // Simple function to compute a hash from a string
+// // Use this for caching (checking whether something changed) etc.
+// function hashString(string: string): number {
+//   return reduce((memo: number, char: string): number => {
+//     memo = ((memo << 5) - memo) + char.charCodeAt(0)
+//     return memo & memo
+//   }, 0)(string.split(""))
+// }
+// // hash a JSON stringified object
+// function hashObject(obj: IObject): number {
+//   return hashString(JSON.stringify(obj))
+// }
 var Series = /** @class */ (function () {
     function Series(state, attributes, accessors) {
         this.dataPoints = [];
@@ -36,6 +36,9 @@ var Series = /** @class */ (function () {
         this.assignAccessors();
         this.renderers = this.initializeRenderers();
     }
+    Series.prototype.update = function (attributes) {
+        this.attributes = fp_1.defaults(attributes)(this.attributes);
+    };
     Series.prototype.assignAccessors = function () {
         var _this = this;
         fp_1.forEach.convert({ cap: false })(function (accessor, key) {
@@ -113,38 +116,74 @@ var Series = /** @class */ (function () {
         }
         return mapping.axisName === axisName ? mapping : null;
     };
-    // focusPoint(axisName: string, focus: any): any {
-    //   if (!this.hasData() || this.hasRenderer("event_flag")) { return }
-    //   // Look up focus axis information
-    //   let focusMapping: any = this.mappings[axisName]
-    //   // Find the datapoint for the focused tick
-    //   let search: (dp: any) => boolean = function(dataPoint: any): boolean {
-    //     return isDate(focus)
-    //       ? dataPoint[focusMapping.index].valueOf() === focus.valueOf()
-    //       : dataPoint[focusMapping.index] === focus
-    //   }
-    //   let match: any[] = find(search)(this.dataPoints)
-    //   if (!match) { return }
-    //   // Get the value for the focused data point for the other axis
-    //   let valueMapping: any = this.mappings[this.otherAxis(focusMapping.axis.orientation())]
-    //   // Make sure we have an array (makes it compatible with ranges which return a tuple)
-    //   let values: any[] = [].concat(match[valueMapping.index])
-    //   if (!values.length) { return }
-    //   let positionValues: number[] = this.stacked ? [].concat(match[valueMapping.runningIndex]) : values
-    //   let positions: any[] = map(valueMapping.axis.computed.scale)(positionValues)
-    //   return {
-    //     barsOnly: this.hasOnlyRenderer("bars"),
-    //     color: this.color,
-    //     colorHex: this.colorHex,
-    //     formatter: this.displayFormatter(),
-    //     name: this.name,
-    //     stacked: this.stacked,
-    //     total: this.total,
-    //     unit: this.unit,
-    //     valuePositions: positions,
-    //     values: values
-    //   }
-    // }
+    Series.prototype.hasRenderer = function (name) {
+        return this.renderAs().indexOf(name) > -1;
+    };
+    // Can take multiple renderer types as inputs, i.e. to check if there are only bars and bar_lines.
+    Series.prototype.hasOnlyRenderer = function (name) {
+        var types = fp_1.flatten([name, "textlabels"]);
+        return fp_1.every(function (renderer) {
+            return types.indexOf(renderer) > -1;
+        })(this.renderAs());
+    };
+    Series.prototype.computeAxisMappings = function () {
+        if (!this.hasData()) {
+            return;
+        }
+        var axesMappings = {
+            x: fp_1.extend(this.state.current.get("computed").axes[this.xAxis()])({ index: this.dataIndeces().x }),
+            y: fp_1.extend(this.state.current.get("computed").axes[this.yAxis()])({ index: this.dataIndeces().y })
+        };
+        axesMappings[this.xAxis()] = axesMappings.x;
+        axesMappings[this.yAxis()] = axesMappings.y;
+        var baseline = fp_1.find(function (axisMapping) { return axisMapping.computed.baseline; })(axesMappings), discrete = fp_1.find(function (axisMapping) { return axisMapping.computed.discrete; })(axesMappings), stack = fp_1.find(function (axisMapping) { return axisMapping.computed.stack; })(axesMappings);
+        this.mappings = fp_1.extend({ baseline: baseline, discrete: discrete, stack: stack })(axesMappings);
+    };
+    Series.prototype.focusPoint = function (axisName, focus) {
+        if (!this.hasData() || this.hasRenderer("event_flag")) {
+            return;
+        }
+        // Look up focus axis information
+        var focusMapping = this.mappings[axisName];
+        // Find the datapoint for the focused tick
+        var search = function (dataPoint) {
+            return fp_1.isDate(focus)
+                ? dataPoint[focusMapping.index].valueOf() === focus.valueOf()
+                : dataPoint[focusMapping.index] === focus;
+        };
+        var match = fp_1.find(search)(this.dataPoints);
+        if (!match) {
+            return;
+        }
+        // Get the value for the focused data point for the other axis
+        var valueMapping = this.mappings[axisName[0] === "x" ? "y" : "x"];
+        // Make sure we have an array (makes it compatible with ranges which return a tuple)
+        var values = [].concat(match[valueMapping.index]);
+        if (!values.length) {
+            return;
+        }
+        var positionValues = this.stacked ? [].concat(match[valueMapping.runningIndex]) : values;
+        var positions = fp_1.map(valueMapping.computed.scale)(positionValues);
+        return {
+            barsOnly: this.hasOnlyRenderer("bars"),
+            color: this.color,
+            colorHex: this.color(),
+            formatter: this.formatter(),
+            name: this.name,
+            stacked: this.stacked,
+            total: this.total,
+            unit: this.unit,
+            valuePositions: positions,
+            values: values
+        };
+    };
+    Series.prototype.legendData = function () {
+        return {
+            key: this.key(),
+            color: this.color(),
+            name: this.name()
+        };
+    };
     Series.prototype.draw = function () {
         this.drawn ? this.updateDraw() : this.initialDraw();
     };
@@ -154,11 +193,6 @@ var Series = /** @class */ (function () {
     };
     Series.prototype.updateDraw = function () {
         this.hasData() ? fp_1.forEach(fp_1.invoke("draw"))(this.renderers) : fp_1.forEach(fp_1.invoke("close"))(this.renderers);
-    };
-    Series.prototype.resize = function () {
-        if (this.hasData()) {
-            fp_1.invoke("resize")(this.renderAs());
-        }
     };
     // Inserts an SVG element into the series group (used by renderers)
     Series.prototype.insertElement = function (name, element) {

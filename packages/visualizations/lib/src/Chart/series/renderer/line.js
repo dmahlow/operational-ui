@@ -56,7 +56,7 @@ var Line = /** @class */ (function (_super) {
             path.classed("hover", false);
         });
     };
-    Line.prototype.prepareData = function (axis, scale) {
+    Line.prototype.prepareData = function (axis, scale, name) {
         // The d3 stack layout considers missing data to be = 0, which automatically closes gaps.
         // If the gaps shouldn't be closed, the relevant values need to be reset to undefined.
         if (this.series.stacked && !this.options.closeGaps) {
@@ -65,13 +65,13 @@ var Line = /** @class */ (function (_super) {
         // return !this.options.closeGaps && axis.options.addMissingDatapoints != null
         //   ? axis.axis.addMissingDatapoints(this.series.dataPoints, axis.index)
         //   : sortBy(scale)(this.series.dataPoints)
-        return fp_1.sortBy(scale)(this.series.dataPoints);
+        return fp_1.flow(fp_1.filter(this.dataFilter.bind(this)(axis, scale, name)), fp_1.sortBy(scale))(this.series.dataPoints);
     };
     Line.prototype.color = function (ctx) {
         return ctx.series.colorHex;
     };
     Line.prototype.data = function (x, y) {
-        return this.yIsBaseline() ? [this.prepareData(this.x, x)] : [this.prepareData(this.y, y)];
+        return this.yIsBaseline() ? [this.prepareData(this.x, x, "x")] : [this.prepareData(this.y, y, "y")];
     };
     Line.prototype.getAttributes = function (x, y, baseline) {
         // store calculations for this draw so they can be used for transition in next draw

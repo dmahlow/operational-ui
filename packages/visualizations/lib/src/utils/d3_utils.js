@@ -44,4 +44,13 @@ exports.setPathAttributes = function (selection, attributes, duration) {
         .style("stroke", attributes.stroke || attributes.color)
         .style("opacity", attributes.opacity);
 };
+exports.setRectAttributes = function (selection, attributes, duration) {
+    transitionOrSelection(selection, duration)
+        .attr("x", attributes.x)
+        .attr("y", attributes.y)
+        .attr("width", attributes.width)
+        .attr("height", attributes.height)
+        .style("fill", attributes.color)
+        .style("stroke", attributes.stroke);
+};
 //# sourceMappingURL=d3_utils.js.map

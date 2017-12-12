@@ -1,7 +1,7 @@
 import AbstractAxis from "./abstract_axis"
-import { sortBy, uniq } from "lodash/fp"
+import { forEach, sortBy, uniq } from "lodash/fp"
 import { scaleBand as d3ScaleBand } from "d3-scale"
-import { IConfig } from "../typings"
+import { IConfig, IObject } from "../typings"
 
 class OrdinalAxis extends AbstractAxis {
 
@@ -15,11 +15,9 @@ class OrdinalAxis extends AbstractAxis {
   }
 
   guess(data: string[]): string[] {
-    // If this axis is user configured but does not currently have any data,
-    // we still need to return something here - otherwise animations will blow up
-    if (data.length === 0) { return [""] }
-
-    return sortBy((d: string) => d)(uniq(data))//Sort.sortMixedStrings()(uniq(data))
+    // @TODO: implement sorting of mixed strings
+    // return Sort.sortMixedStrings()(uniq(data))
+    return sortBy((d: string) => d)(uniq(data))
   }
 
   hasRules(): boolean {
@@ -42,7 +40,7 @@ class OrdinalAxis extends AbstractAxis {
     // - but looks still better than drawing all bars on top of each other
     const config: IConfig = this.state.current.get("config")
     let minTickWidth: number = Math.max(
-      config.minBarTickWidth.ord,
+      config.minBarTickWidth.ordinal,
       config.minBarWidth * computed.numberOfBars
     )
     if (computed.tickWidth < minTickWidth) {
@@ -61,14 +59,20 @@ class OrdinalAxis extends AbstractAxis {
       computed.range[0] + computed.halfTickWidth,
       computed.range[1] + computed.halfTickWidth
     ]
+
+    const numberOfBars = this.state.current.get("computed").series.computed[this.name].numberOfBars
+    if (numberOfBars > 0) {
+      computed.barSeries = this.computeBarSeries(computed)    }
+
     computed.scale = this.computeScale(shiftedRange, computed.domain)
-
-    if (computed.tickOffsetRequired) {
-      computed.barOffset = this.computeBarOffset(computed.tickWidth, computed.numberOfBars)
-      computed.barDimension = this.computeBarDimension(computed.barOffset)
-    }
-
     computed.ticks = computed.domain
+  }
+
+  computeBarSeries(computed: IObject): void {
+    let barSeries = this.state.current.get("computed").series.computed[this.name].barSeries
+    computed.barOffsetScale = this.computeBarOffset(barSeries, computed.tickWidth)
+    this.computeBarDimension(computed, barSeries)
+    return barSeries
   }
 
   computeAligned(computed: any): void {}
@@ -85,10 +89,10 @@ class OrdinalAxis extends AbstractAxis {
     return d3ScaleBand().domain(domain).range(range)
   }
 
-  computeBarDimension(barOffset: any): () => number {
-    return function(): number {
-      return barOffset.rangeBand()
-    }
+  computeBarDimension(computed: IObject, barSeries: IObject[]): void {
+    forEach((series: IObject): void => {
+      series.barDimension = computed.barOffsetScale.bandwidth()
+    })(barSeries)
   }
 
   // Drawing

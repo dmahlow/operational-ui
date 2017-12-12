@@ -9,6 +9,7 @@ abstract class AbstractRenderer {
 
   accessor: string
   baseline: any
+  discrete: any
   drawn: boolean = false
   el: any
   key: (d: any) => string
@@ -67,6 +68,10 @@ abstract class AbstractRenderer {
         this.baseline = axis
         this.baseline.axis = key
       }
+      if (axis.computed.discrete) {
+        this.discrete = axis
+        this.discrete.axis = key
+      }
     })(computedAxes)
     this.x = computedAxes[this.series.xAxis()].computed
     this.y = computedAxes[this.series.yAxis()].computed
@@ -101,6 +106,13 @@ abstract class AbstractRenderer {
 
   abstract data(x: any, y: any): any
 
+  dataFilter(axis: IObject, scale: any, name: string): any {
+    const index: number = this.series.dataIndeces()[name]
+    return axis.discrete
+      ? (d: any[]): boolean => axis.domain.indexOf(d[index]) > -1
+      : (d: any[]): boolean => d[index] > axis.domain[0] && d[index] < axis.domain[1]
+  }
+
   abstract getAttributes(x: any, y: any, baseline: any): any
 
   abstract getStartAttributes(x: any, y: any, baseline: any, currentDraw: any): any
@@ -122,13 +134,14 @@ abstract class AbstractRenderer {
   }
 
   transitionSelection(data: any, attributes: any, duration: number, onTransitionEnd: () => void = undefined): void {
-    this.el
+    let selection: TD3Selection = this.el
       .select(`g.${(styles as any)[this.type]}`)
       .selectAll(this.accessor)
-      .data(data, this.key)
-      // .transition()
-      // .duration(duration)
-      // .ease(easeLinear)
+
+    selection.enter().merge(selection)
+      .transition()
+      .duration(duration)
+      .ease(easeLinear)
       .call(this.setAttributes, attributes, this, duration, onTransitionEnd)
       // .each("end", onTransitionEnd)
   }

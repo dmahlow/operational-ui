@@ -1,6 +1,6 @@
 import Renderer from "./renderer/renderer"
 import { TD3Selection, IObject, IState } from "../typings"
-import { every, extend, filter, forEach, get, invoke, isArray, isDate, isObject, map, reduce } from "lodash/fp"
+import { compact, defaults, every, extend, filter, find, flatten, forEach, get, invoke, isArray, isDate, isObject, map, reduce } from "lodash/fp"
 
 const axisTypeMapper: IObject = {
   time: "date",
@@ -16,18 +16,18 @@ const validators: IObject = {
   string: () => true
 }
 
-// Simple function to compute a hash from a string
-// Use this for caching (checking whether something changed) etc.
-function hashString(string: string): number {
-  return reduce((memo: number, char: string): number => {
-    memo = ((memo << 5) - memo) + char.charCodeAt(0)
-    return memo & memo
-  }, 0)(string.split(""))
-}
-// hash a JSON stringified object
-function hashObject(obj: IObject): number {
-  return hashString(JSON.stringify(obj))
-}
+// // Simple function to compute a hash from a string
+// // Use this for caching (checking whether something changed) etc.
+// function hashString(string: string): number {
+//   return reduce((memo: number, char: string): number => {
+//     memo = ((memo << 5) - memo) + char.charCodeAt(0)
+//     return memo & memo
+//   }, 0)(string.split(""))
+// }
+// // hash a JSON stringified object
+// function hashObject(obj: IObject): number {
+//   return hashString(JSON.stringify(obj))
+// }
 
 class Series {
   accessors: any
@@ -44,7 +44,7 @@ class Series {
   hideInLegend: () => boolean
   key: () => string
   legendName: string
-  mappings: any
+  mappings: IObject
   name: () => string
   renderAs: () => any
   renderers: Renderer[]
@@ -62,6 +62,10 @@ class Series {
     this.accessors = accessors
     this.assignAccessors()
     this.renderers = this.initializeRenderers()
+  }
+
+  update(attributes: IObject): void {
+    this.attributes = defaults(attributes)(this.attributes)
   }
 
   assignAccessors(): void {
@@ -146,44 +150,82 @@ class Series {
     return mapping.axisName === axisName ? mapping : null
   }
 
-  // focusPoint(axisName: string, focus: any): any {
-  //   if (!this.hasData() || this.hasRenderer("event_flag")) { return }
+  hasRenderer(name: string): boolean {
+    return this.renderAs().indexOf(name) > -1
+  }
 
-  //   // Look up focus axis information
-  //   let focusMapping: any = this.mappings[axisName]
+  // Can take multiple renderer types as inputs, i.e. to check if there are only bars and bar_lines.
+  hasOnlyRenderer(name: string): boolean {
+    let types: string[] = flatten([name, "textlabels"])
+    return every((renderer: string): boolean => {
+      return types.indexOf(renderer) > -1
+    })(this.renderAs())
+  }
 
-  //   // Find the datapoint for the focused tick
-  //   let search: (dp: any) => boolean = function(dataPoint: any): boolean {
-  //     return isDate(focus)
-  //       ? dataPoint[focusMapping.index].valueOf() === focus.valueOf()
-  //       : dataPoint[focusMapping.index] === focus
-  //   }
+  computeAxisMappings(): void {
+    if (!this.hasData()) { return }
 
-  //   let match: any[] = find(search)(this.dataPoints)
-  //   if (!match) { return }
+    let axesMappings: IObject = {
+      x: extend(this.state.current.get("computed").axes[this.xAxis()])({ index: this.dataIndeces().x}),
+      y: extend(this.state.current.get("computed").axes[this.yAxis()])({ index: this.dataIndeces().y})
+    }
 
-  //   // Get the value for the focused data point for the other axis
-  //   let valueMapping: any = this.mappings[this.otherAxis(focusMapping.axis.orientation())]
-  //   // Make sure we have an array (makes it compatible with ranges which return a tuple)
-  //   let values: any[] = [].concat(match[valueMapping.index])
-  //   if (!values.length) { return }
+    axesMappings[this.xAxis()] = axesMappings.x
+    axesMappings[this.yAxis()] = axesMappings.y
 
-  //   let positionValues: number[] = this.stacked ? [].concat(match[valueMapping.runningIndex]) : values
-  //   let positions: any[] = map(valueMapping.axis.computed.scale)(positionValues)
+    const baseline: any = find((axisMapping: any): any => axisMapping.computed.baseline)(axesMappings),
+      discrete: any = find((axisMapping: any): any => axisMapping.computed.discrete)(axesMappings),
+      stack: any = find((axisMapping: any): any => axisMapping.computed.stack)(axesMappings)
 
-  //   return {
-  //     barsOnly: this.hasOnlyRenderer("bars"),
-  //     color: this.color,
-  //     colorHex: this.colorHex,
-  //     formatter: this.displayFormatter(),
-  //     name: this.name,
-  //     stacked: this.stacked,
-  //     total: this.total,
-  //     unit: this.unit,
-  //     valuePositions: positions,
-  //     values: values
-  //   }
-  // }
+    this.mappings = extend({ baseline, discrete, stack })(axesMappings)
+  }
+
+  focusPoint(axisName: string, focus: any): any {
+    if (!this.hasData() || this.hasRenderer("event_flag")) { return }
+
+    // Look up focus axis information
+    const focusMapping: any = this.mappings[axisName]
+
+    // Find the datapoint for the focused tick
+    let search: (dp: any) => boolean = (dataPoint: any): boolean => {
+      return isDate(focus)
+        ? dataPoint[focusMapping.index].valueOf() === focus.valueOf()
+        : dataPoint[focusMapping.index] === focus
+    }
+
+    let match: any[] = find(search)(this.dataPoints)
+    if (!match) { return; }
+
+    // Get the value for the focused data point for the other axis
+    let valueMapping: any = this.mappings[axisName[0] === "x" ? "y" : "x"]
+    // Make sure we have an array (makes it compatible with ranges which return a tuple)
+    let values: any[] = [].concat(match[valueMapping.index])
+    if (!values.length) { return }
+
+    let positionValues: number[] = this.stacked ? [].concat(match[valueMapping.runningIndex]) : values
+    let positions: any[] = map(valueMapping.computed.scale)(positionValues)
+
+    return {
+      barsOnly: this.hasOnlyRenderer("bars"),
+      color: this.color,
+      colorHex: this.color(),
+      formatter: this.formatter(),
+      name: this.name,
+      stacked: this.stacked,
+      total: this.total,
+      unit: this.unit,
+      valuePositions: positions,
+      values: values
+    }
+  }
+
+  legendData(): IObject {
+    return {
+      key: this.key(),
+      color: this.color(),
+      name: this.name()
+    }
+  }
 
   draw(): void {
     this.drawn ? this.updateDraw() : this.initialDraw()
@@ -196,12 +238,6 @@ class Series {
 
   updateDraw(): void {
     this.hasData() ? forEach(invoke("draw"))(this.renderers) : forEach(invoke("close"))(this.renderers)
-  }
-
-  resize(): void {
-    if (this.hasData()) {
-      invoke("resize")(this.renderAs())
-    }
   }
 
   // Inserts an SVG element into the series group (used by renderers)

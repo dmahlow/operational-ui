@@ -43,3 +43,13 @@ export const setPathAttributes = (selection: any, attributes: any, duration?: nu
     .style("stroke", attributes.stroke || attributes.color)
     .style("opacity", attributes.opacity)
 }
+
+export const setRectAttributes = (selection: any, attributes: any, duration?: number): void => {
+  transitionOrSelection(selection, duration)
+    .attr("x", attributes.x)
+    .attr("y", attributes.y)
+    .attr("width", attributes.width)
+    .attr("height", attributes.height)
+    .style("fill", attributes.color)
+    .style("stroke", attributes.stroke)
+}

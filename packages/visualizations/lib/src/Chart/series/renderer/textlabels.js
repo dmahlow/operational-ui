@@ -64,7 +64,10 @@ var TextLabels = /** @class */ (function (_super) {
         return function (d) { return _this.state.current.get("config").numberFormatter(d[index]); };
     };
     TextLabels.prototype.data = function (x, y) {
-        return fp_1.filter(function (d) { return d[1] != null; })(this.series.dataPoints);
+        return this.yIsBaseline() ? this.prepareData(this.x, x, "x") : this.prepareData(this.y, y, "y");
+    };
+    TextLabels.prototype.prepareData = function (axis, scale, name) {
+        return fp_1.flow(fp_1.filter(this.dataFilter.bind(this)(axis, scale, name)), fp_1.filter(function (d) { return d[1] != null; }))(this.series.dataPoints);
     };
     TextLabels.prototype.getAttributes = function (x, y, baseline) {
         // store calculations for this draw so they can be used for transition in next draw

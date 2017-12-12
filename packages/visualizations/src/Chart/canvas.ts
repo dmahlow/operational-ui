@@ -7,7 +7,7 @@ import { find, forEach, reduce } from "lodash/fp"
 const seriesElements: string[][] = [
   // ["area", "drawing_clip"],
   // ["range", "drawing_clip"],
-  // ["bars", "drawing_clip"],
+  ["bars", "drawing_clip"],
   // ["bar_line", "drawing_clip"],
   // ["event_flag", "drawing_clip"],
   ["line", "drawing_clip"],

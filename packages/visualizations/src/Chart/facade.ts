@@ -77,7 +77,7 @@ class ProcessFlow {
       maxLegendRatio: 1 / 2,
       maxLegendWidth: 200,
       minBarTickWidth: {
-        ord: 13
+        ordinal: 13
       },
       minBarWidth: 3,
       minChartWithLegend: 100,

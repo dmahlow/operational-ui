@@ -23,7 +23,7 @@ class Site extends React.Component<{}, {}> {
             [23200, "J"]
           ],
           dataFormat: ["string", "number"],
-          renderAs: ["line", "textlabels"],
+          renderAs: ["line", "textlabels", "bars"],
           color: "#00f",
         },
         {
@@ -41,14 +41,15 @@ class Site extends React.Component<{}, {}> {
             ["I", 323500]
           ],
           dataFormat: ["string", "number"],
-          renderAs: ["line", "textlabels"],
+          renderAs: ["line", "textlabels", "bars"],
           color: "#0f0",
           yAxis: "y2"
         }
       ],
       axes: {
         x1: {
-          type: "ordinal"
+          type: "ordinal",
+          values: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
         },
         y1: {
           type: "quant",
@@ -59,6 +60,9 @@ class Site extends React.Component<{}, {}> {
           type: "quant",
           unit: "EUR",
           formatter: (d: number): string => d.toLocaleString(),
+        },
+        x2: {
+          type: "ordinal"
         }
       }
     }

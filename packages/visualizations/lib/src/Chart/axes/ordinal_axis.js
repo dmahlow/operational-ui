@@ -26,12 +26,9 @@ var OrdinalAxis = /** @class */ (function (_super) {
         this.values = options.values || this.values;
     };
     OrdinalAxis.prototype.guess = function (data) {
-        // If this axis is user configured but does not currently have any data,
-        // we still need to return something here - otherwise animations will blow up
-        if (data.length === 0) {
-            return [""];
-        }
-        return fp_1.sortBy(function (d) { return d; })(fp_1.uniq(data)); //Sort.sortMixedStrings()(uniq(data))
+        // @TODO: implement sorting of mixed strings
+        // return Sort.sortMixedStrings()(uniq(data))
+        return fp_1.sortBy(function (d) { return d; })(fp_1.uniq(data));
     };
     OrdinalAxis.prototype.hasRules = function () {
         return false;
@@ -50,7 +47,7 @@ var OrdinalAxis = /** @class */ (function (_super) {
         // This will result in bars possibly overflowing the svg drawing area
         // - but looks still better than drawing all bars on top of each other
         var config = this.state.current.get("config");
-        var minTickWidth = Math.max(config.minBarTickWidth.ord, config.minBarWidth * computed.numberOfBars);
+        var minTickWidth = Math.max(config.minBarTickWidth.ordinal, config.minBarWidth * computed.numberOfBars);
         if (computed.tickWidth < minTickWidth) {
             computed.tickWidth = minTickWidth;
             computed.width = computed.ticksInDomain * computed.tickWidth;
@@ -65,12 +62,18 @@ var OrdinalAxis = /** @class */ (function (_super) {
             computed.range[0] + computed.halfTickWidth,
             computed.range[1] + computed.halfTickWidth
         ];
-        computed.scale = this.computeScale(shiftedRange, computed.domain);
-        if (computed.tickOffsetRequired) {
-            computed.barOffset = this.computeBarOffset(computed.tickWidth, computed.numberOfBars);
-            computed.barDimension = this.computeBarDimension(computed.barOffset);
+        var numberOfBars = this.state.current.get("computed").series.computed[this.name].numberOfBars;
+        if (numberOfBars > 0) {
+            computed.barSeries = this.computeBarSeries(computed);
         }
+        computed.scale = this.computeScale(shiftedRange, computed.domain);
         computed.ticks = computed.domain;
+    };
+    OrdinalAxis.prototype.computeBarSeries = function (computed) {
+        var barSeries = this.state.current.get("computed").series.computed[this.name].barSeries;
+        computed.barOffsetScale = this.computeBarOffset(barSeries, computed.tickWidth);
+        this.computeBarDimension(computed, barSeries);
+        return barSeries;
     };
     OrdinalAxis.prototype.computeAligned = function (computed) { };
     OrdinalAxis.prototype.computeDomain = function () {
@@ -82,10 +85,10 @@ var OrdinalAxis = /** @class */ (function (_super) {
     OrdinalAxis.prototype.computeScale = function (range, domain) {
         return d3_scale_1.scaleBand().domain(domain).range(range);
     };
-    OrdinalAxis.prototype.computeBarDimension = function (barOffset) {
-        return function () {
-            return barOffset.rangeBand();
-        };
+    OrdinalAxis.prototype.computeBarDimension = function (computed, barSeries) {
+        fp_1.forEach(function (series) {
+            series.barDimension = computed.barOffsetScale.bandwidth();
+        })(barSeries);
     };
     // Drawing
     OrdinalAxis.prototype.tickFormatter = function () {

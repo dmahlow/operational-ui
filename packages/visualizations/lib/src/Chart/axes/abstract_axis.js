@@ -41,6 +41,8 @@ var AbstractAxis = /** @class */ (function () {
         computed.range = this.computeRange();
         computed.rangeDirection = this.computeRangeDirection(computed.range);
         computed.width = this.computeWidth(computed.range);
+        computed.baseline = this.baseline;
+        computed.discrete = this.discrete;
         this.computeAxisInformation(computed, args);
         this.computed = computed;
         this.previous = fp_1.defaults(this.computed)(this.previous);
@@ -177,14 +179,16 @@ var AbstractAxis = /** @class */ (function () {
     AbstractAxis.prototype.computeWidth = function (range) {
         return Math.abs(range[0] - range[1]);
     };
-    AbstractAxis.prototype.computeBarOffset = function (tickWidth, numberOfBars) {
-        var innerPadding = 0;
-        var outerPadding = numberOfBars > 1 ? 0.1 : 0;
-        return d3_scale_1.scaleBand()
-            .domain(fp_1.map(String)(d3_array_1.range(numberOfBars)))
+    AbstractAxis.prototype.computeBarOffset = function (barSeries, tickWidth) {
+        var innerPadding = 0, outerPadding = barSeries.length > 1 ? 0.1 : 0, scale = d3_scale_1.scaleBand()
+            .domain(fp_1.map(String)(d3_array_1.range(barSeries.length)))
             .range([0, tickWidth])
             .paddingInner(innerPadding)
             .paddingOuter(outerPadding);
+        fp_1.forEach(function (series) {
+            series.barOffset = scale(series.index);
+        })(barSeries);
+        return scale;
     };
     AbstractAxis.prototype.adjustRange = function () {
         this.compute();

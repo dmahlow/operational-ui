@@ -1,6 +1,6 @@
 // import Area from "./area"
 // import BarLine from "./bar_line"
-// import Bars from "./bars"
+import Bars from "./bars"
 // import EventFlag from "./event_flag"
 import Line from "./line"
 // import Points from "./points"
@@ -17,8 +17,8 @@ class Renderer {
       //   return new Area(state, series, options)
       // case "bar_line":
       //   return new BarLine(state, series, options)
-      // case "bars":
-      //   return new Bars(state, series, options)
+      case "bars":
+        return new Bars(state, series, el, options)
       // case "event_flag":
       //   return new EventFlag(state, series, options)
       case "line":
