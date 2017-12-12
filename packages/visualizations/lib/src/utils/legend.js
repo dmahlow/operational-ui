@@ -55,7 +55,7 @@ var Legend = /** @class */ (function () {
         var _this = this;
         var computedSeries = this.state.current.get("computed").series;
         // No legend
-        if (!this.state.current.get("config").legend || computedSeries && !computedSeries.hasData) {
+        if (!this.state.current.get("config").legend) {
             this.remove();
         }
         else if (this.drawn) {

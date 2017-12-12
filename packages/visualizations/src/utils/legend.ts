@@ -58,7 +58,7 @@ abstract class Legend {
   draw(): void {
     const computedSeries: IObject = this.state.current.get("computed").series
     // No legend
-    if (!this.state.current.get("config").legend || computedSeries && !computedSeries.hasData) {
+    if (!this.state.current.get("config").legend) {
       this.remove()
     } else if (this.drawn) {
       // Check if legend requirements are the same as before. If they are, call updateDraw(),
