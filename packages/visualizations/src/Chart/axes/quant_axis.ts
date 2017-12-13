@@ -12,8 +12,10 @@ class QuantAxis extends AbstractAxis {
   dataType: string = "number"
   discrete: boolean = false
   end: number
+  formatter: (d: number) => string
   expand: string
   start: number
+  unit: string
 
   updateOptions(options: any): void {
     this.expand = options.expand || this.expand || "zero"
@@ -24,6 +26,9 @@ class QuantAxis extends AbstractAxis {
     if (this.start && this.end && this.start === this.end) {
       this.end = this.start + 1
     }
+
+    this.unit = options.unit
+    this.formatter = options.formatter || this.state.current.get("config").numberFormatter
   }
 
   ruleClass(ruleValue: number, index: number): string {
@@ -92,8 +97,12 @@ class QuantAxis extends AbstractAxis {
   }
 
   // Drawing
-  tickFormatter(unitTick: number): string {
-    return this.state.current.get("config").numberFormatter
+  tickFormatter(unitTick: number): (d: number) => string {
+    return (d: number): string => {
+      return d === unitTick && this.unit
+        ? this.unit
+        : this.formatter(d)
+    }
   }
 
   tickMapper(): any {

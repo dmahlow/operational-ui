@@ -63,12 +63,11 @@ class Site extends React.Component<{}, {}> {
         y1: {
           type: "quant",
           unit: "",
-          formatter: (d: number): string => d.toLocaleString(),
+          formatter: (d: number): string => d > 999 ? d / 1000 + "k" : d.toString(),
         },
         y2: {
           type: "quant",
           unit: "EUR",
-          formatter: (d: number): string => d.toLocaleString(),
         },
         x2: {
           type: "ordinal"

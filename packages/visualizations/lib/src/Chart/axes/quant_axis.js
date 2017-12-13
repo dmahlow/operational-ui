@@ -34,6 +34,8 @@ var QuantAxis = /** @class */ (function (_super) {
         if (this.start && this.end && this.start === this.end) {
             this.end = this.start + 1;
         }
+        this.unit = options.unit;
+        this.formatter = options.formatter || this.state.current.get("config").numberFormatter;
     };
     QuantAxis.prototype.ruleClass = function (ruleValue, index) {
         return quant_axis_utils_1.default.ruleClass(ruleValue, index, this.computed.ticks);
@@ -95,7 +97,12 @@ var QuantAxis = /** @class */ (function (_super) {
     };
     // Drawing
     QuantAxis.prototype.tickFormatter = function (unitTick) {
-        return this.state.current.get("config").numberFormatter;
+        var _this = this;
+        return function (d) {
+            return d === unitTick && _this.unit
+                ? _this.unit
+                : _this.formatter(d);
+        };
     };
     QuantAxis.prototype.tickMapper = function () {
         return Number;
