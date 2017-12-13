@@ -1,7 +1,5 @@
 import Canvas from "./canvas"
 import * as d3 from "d3-selection"
-import "d3-transition"
-import { easeLinear } from "d3-ease"
 import { forEach, isArray, reduce } from "lodash/fp"
 import { IEvents, IObject, IState, TD3Selection, TSeriesEl, TStateWriter } from "./typings"
 import * as styles from "./styles"
@@ -46,14 +44,14 @@ abstract class DrawingCanvas extends Canvas {
   appendDrawingClip(): void {
     this.elements.defs.append("clipPath")
       .attr("class", "chart-clip-path")
-      .attr("id", this.prefixedId("_xrules_group"))
+      .attr("id", this.drawingClipDefinitionId())
       .append("rect")
   }
 
   appendYRulesClip(): void {
     this.elements.defs.append("clipPath")
       .attr("class", "chart-clip-path")
-      .attr("id", this.prefixedId("_yrules_clip"))
+      .attr("id", this.yRulesDefinitionId())
       .append("rect")
   }
 
@@ -81,7 +79,7 @@ abstract class DrawingCanvas extends Canvas {
         let clip: string = se[1]
         memo[renderer] = series.append("svg:g")
           .attr("class", "series-" + renderer)
-          .attr("clip-path", "url(#" + this.prefixedId("clip") + ")")
+          .attr("clip-path", "url(#" + this.prefixedId(`_${clip}`) + ")")
       } else {
         memo[se] = series.append("svg:g").attr("class", "series-" + se)
       }
@@ -160,22 +158,9 @@ abstract class DrawingCanvas extends Canvas {
     this.el
       .style("width", drawingContainerDims.width + "px")
       .style("height", drawingContainerDims.height + "px")
-    this.elements.background.transition()
-      .duration(config.duration).ease(easeLinear)
+    this.elements.background
       .attr("width", drawingContainerDims.width)
       .attr("height", drawingContainerDims.height)
-    this.elements.defs.select("#" + this.drawingClipDefinitionId() + " rect").transition()
-      .duration(config.duration).ease(easeLinear)
-      .attr("width", config.width)
-      .attr("height", config.height + 1)
-    this.elements.defs.select("#" + this.yRulesDefinitionId() + " rect").transition()
-      .duration(config.duration).ease(easeLinear)
-      .attr("width", drawingContainerDims.width)
-      .attr("height", config.height)
-      // .attr("transform", "translate(" + (config.y1.margin) + ", 0)")
-    this.elements.drawing.transition()
-      .duration(config.duration).ease(easeLinear)
-      // .attr("transform", "translate(" + (config.y1.margin + "," + config.x2.margin) + ")")
   }
 
   resize(): void {

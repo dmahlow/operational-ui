@@ -12,8 +12,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_1 = require("./canvas");
 var d3 = require("d3-selection");
-require("d3-transition");
-var d3_ease_1 = require("d3-ease");
 var fp_1 = require("lodash/fp");
 var styles = require("./styles");
 var DrawingCanvas = /** @class */ (function (_super) {
@@ -50,13 +48,13 @@ var DrawingCanvas = /** @class */ (function (_super) {
     DrawingCanvas.prototype.appendDrawingClip = function () {
         this.elements.defs.append("clipPath")
             .attr("class", "chart-clip-path")
-            .attr("id", this.prefixedId("_xrules_group"))
+            .attr("id", this.drawingClipDefinitionId())
             .append("rect");
     };
     DrawingCanvas.prototype.appendYRulesClip = function () {
         this.elements.defs.append("clipPath")
             .attr("class", "chart-clip-path")
-            .attr("id", this.prefixedId("_yrules_clip"))
+            .attr("id", this.yRulesDefinitionId())
             .append("rect");
     };
     DrawingCanvas.prototype.appendBackground = function () {
@@ -83,7 +81,7 @@ var DrawingCanvas = /** @class */ (function (_super) {
                 var clip = se[1];
                 memo[renderer] = series.append("svg:g")
                     .attr("class", "series-" + renderer)
-                    .attr("clip-path", "url(#" + _this.prefixedId("clip") + ")");
+                    .attr("clip-path", "url(#" + _this.prefixedId("_" + clip) + ")");
             }
             else {
                 memo[se] = series.append("svg:g").attr("class", "series-" + se);
@@ -148,22 +146,9 @@ var DrawingCanvas = /** @class */ (function (_super) {
         this.el
             .style("width", drawingContainerDims.width + "px")
             .style("height", drawingContainerDims.height + "px");
-        this.elements.background.transition()
-            .duration(config.duration).ease(d3_ease_1.easeLinear)
+        this.elements.background
             .attr("width", drawingContainerDims.width)
             .attr("height", drawingContainerDims.height);
-        this.elements.defs.select("#" + this.drawingClipDefinitionId() + " rect").transition()
-            .duration(config.duration).ease(d3_ease_1.easeLinear)
-            .attr("width", config.width)
-            .attr("height", config.height + 1);
-        this.elements.defs.select("#" + this.yRulesDefinitionId() + " rect").transition()
-            .duration(config.duration).ease(d3_ease_1.easeLinear)
-            .attr("width", drawingContainerDims.width)
-            .attr("height", config.height);
-        // .attr("transform", "translate(" + (config.y1.margin) + ", 0)")
-        this.elements.drawing.transition()
-            .duration(config.duration).ease(d3_ease_1.easeLinear);
-        // .attr("transform", "translate(" + (config.y1.margin + "," + config.x2.margin) + ")")
     };
     DrawingCanvas.prototype.resize = function () {
         this.draw();

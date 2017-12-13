@@ -13,7 +13,7 @@ const seriesElements: string[][] = [
   ["line", "drawing_clip"],
   // ["circles", "drawing_clip"],
   // ["trend", "drawing_clip"],
-  // ["points", "drawing_clip"],
+  // ["points", "xyrules_clip"],
   ["textlabels", "yrules_clip"]
 ]
 
@@ -35,8 +35,7 @@ class Canvas extends AbstractDrawingCanvas {
     super(state, stateWriter, events, context)
     this.mousePosition = this.initialMousePosition()
 
-    this.appendDrawingClip()
-    this.appendYRulesClip()
+    this.appendClipPaths()
     this.appendBackground()
     this.appendDrawingGroup()
 
@@ -49,6 +48,23 @@ class Canvas extends AbstractDrawingCanvas {
 
   createEl(): TD3Selection {
     return d3.select(document.createElementNS(d3.namespaces["svg"], "svg"))
+  }
+
+  appendClipPaths(): void {
+    this.appendDrawingClip()
+    this.appendYRulesClip()
+    this.appendXYRulesClip()
+  }
+
+  appendXYRulesClip(): void {
+    this.elements.defs.append("clipPath")
+      .attr("class", "chart-clip-path")
+      .attr("id", this.xyRulesDefinitionId())
+      .append("rect")
+  }
+
+  xyRulesDefinitionId(): string {
+    return this.prefixedId("_xyrules_clip")
   }
 
   initialMousePosition(): IMousePosition {
@@ -110,6 +126,49 @@ class Canvas extends AbstractDrawingCanvas {
 
   stopMouseMove(): void {
     this.el.on("mousemove", undefined)
+  }
+
+  drawingDims(): { [key: string]: number } {
+    const drawingContainerDims: { height: number, width: number } = this.drawingContainerDims(),
+      axes: IObject = this.state.current.get("computed").axes,
+      totalXAxisHeight: number = reduce.convert({ cap: false })((memo: number, axis: IObject, key: string): number => {
+        if (key[0] === "x") { memo += axis.dimensions.height }
+        return memo
+      }, 0)(axes),
+      totalYAxisWidth: number = reduce.convert({ cap: false })((memo: number, axis: IObject, key: string): number => {
+        if (key[0] === "y") { memo += axis.dimensions.width }
+        return memo
+      }, 0)(axes),
+      dims = {
+        height: drawingContainerDims.height - totalXAxisHeight,
+        width: drawingContainerDims.width - totalYAxisWidth,
+        rulesHeight: drawingContainerDims.height - totalXAxisHeight / 2,
+        rulesWidth: drawingContainerDims.width - totalYAxisWidth / 2,
+        xOffset: axes.y1 ? axes.y1.dimensions.width: 0,
+        yOffset: axes.x2 ? axes.x2.dimensions.height: 0
+      }
+    this.stateWriter("drawingDims", dims)
+    return dims
+  }
+
+  setClipPathDimensions(): void {
+    const drawingContainerDims: { width: number, height: number } = this.drawingContainerDims(),
+      drawingDims: { [key: string]: number } = this.drawingDims()
+
+    this.elements.defs.select(`#${this.drawingClipDefinitionId()} rect`)
+      .attr("width", drawingDims.width)
+      .attr("height", drawingDims.height)
+      .attr("transform", `translate(${drawingDims.xOffset}, ${drawingDims.yOffset})`)
+
+    this.elements.defs.select(`#${this.yRulesDefinitionId()} rect`)
+      .attr("width", drawingDims.rulesWidth)
+      .attr("height", drawingDims.height)
+      .attr("transform", `translate(${drawingDims.xOffset / 2}, 0)`)
+
+    this.elements.defs.select(`#${this.xyRulesDefinitionId()} rect`)
+      .attr("width", drawingDims.rulesWidth)
+      .attr("height", drawingDims.rulesHeight)
+      .attr("transform", `translate(${drawingDims.xOffset / 2}, ${drawingDims.yOffset / 2})`)
   }
 }
 

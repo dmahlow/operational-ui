@@ -23,7 +23,7 @@ var seriesElements = [
     ["line", "drawing_clip"],
     // ["circles", "drawing_clip"],
     // ["trend", "drawing_clip"],
-    // ["points", "drawing_clip"],
+    // ["points", "xyrules_clip"],
     ["textlabels", "yrules_clip"]
 ];
 var legendOptions = [
@@ -36,8 +36,7 @@ var Canvas = /** @class */ (function (_super) {
     function Canvas(state, stateWriter, events, context) {
         var _this = _super.call(this, state, stateWriter, events, context) || this;
         _this.mousePosition = _this.initialMousePosition();
-        _this.appendDrawingClip();
-        _this.appendYRulesClip();
+        _this.appendClipPaths();
         _this.appendBackground();
         _this.appendDrawingGroup();
         _this.appendAxisElements();
@@ -49,6 +48,20 @@ var Canvas = /** @class */ (function (_super) {
     }
     Canvas.prototype.createEl = function () {
         return d3.select(document.createElementNS(d3.namespaces["svg"], "svg"));
+    };
+    Canvas.prototype.appendClipPaths = function () {
+        this.appendDrawingClip();
+        this.appendYRulesClip();
+        this.appendXYRulesClip();
+    };
+    Canvas.prototype.appendXYRulesClip = function () {
+        this.elements.defs.append("clipPath")
+            .attr("class", "chart-clip-path")
+            .attr("id", this.xyRulesDefinitionId())
+            .append("rect");
+    };
+    Canvas.prototype.xyRulesDefinitionId = function () {
+        return this.prefixedId("_xyrules_clip");
     };
     Canvas.prototype.initialMousePosition = function () {
         return {
@@ -105,6 +118,43 @@ var Canvas = /** @class */ (function (_super) {
     };
     Canvas.prototype.stopMouseMove = function () {
         this.el.on("mousemove", undefined);
+    };
+    Canvas.prototype.drawingDims = function () {
+        var drawingContainerDims = this.drawingContainerDims(), axes = this.state.current.get("computed").axes, totalXAxisHeight = fp_1.reduce.convert({ cap: false })(function (memo, axis, key) {
+            if (key[0] === "x") {
+                memo += axis.dimensions.height;
+            }
+            return memo;
+        }, 0)(axes), totalYAxisWidth = fp_1.reduce.convert({ cap: false })(function (memo, axis, key) {
+            if (key[0] === "y") {
+                memo += axis.dimensions.width;
+            }
+            return memo;
+        }, 0)(axes), dims = {
+            height: drawingContainerDims.height - totalXAxisHeight,
+            width: drawingContainerDims.width - totalYAxisWidth,
+            rulesHeight: drawingContainerDims.height - totalXAxisHeight / 2,
+            rulesWidth: drawingContainerDims.width - totalYAxisWidth / 2,
+            xOffset: axes.y1 ? axes.y1.dimensions.width : 0,
+            yOffset: axes.x2 ? axes.x2.dimensions.height : 0
+        };
+        this.stateWriter("drawingDims", dims);
+        return dims;
+    };
+    Canvas.prototype.setClipPathDimensions = function () {
+        var drawingContainerDims = this.drawingContainerDims(), drawingDims = this.drawingDims();
+        this.elements.defs.select("#" + this.drawingClipDefinitionId() + " rect")
+            .attr("width", drawingDims.width)
+            .attr("height", drawingDims.height)
+            .attr("transform", "translate(" + drawingDims.xOffset + ", " + drawingDims.yOffset + ")");
+        this.elements.defs.select("#" + this.yRulesDefinitionId() + " rect")
+            .attr("width", drawingDims.rulesWidth)
+            .attr("height", drawingDims.height)
+            .attr("transform", "translate(" + drawingDims.xOffset / 2 + ", 0)");
+        this.elements.defs.select("#" + this.xyRulesDefinitionId() + " rect")
+            .attr("width", drawingDims.rulesWidth)
+            .attr("height", drawingDims.rulesHeight)
+            .attr("transform", "translate(" + drawingDims.xOffset / 2 + ", " + drawingDims.yOffset / 2 + ")");
     };
     return Canvas;
 }(drawing_canvas_1.default));

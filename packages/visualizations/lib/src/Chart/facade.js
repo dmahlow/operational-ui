@@ -152,6 +152,7 @@ var ProcessFlow = /** @class */ (function () {
         this.components.legend.draw();
         this.canvas.draw();
         this.components.axes.draw();
+        this.canvas.setClipPathDimensions();
         this.series.draw();
         //   this.components.focus.adaptToData();
         //   this.series.computeStack();
