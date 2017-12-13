@@ -84,14 +84,12 @@ var AbstractAxis = /** @class */ (function () {
         // svg element
         this.el = this.elGroup.append("svg:g")
             .attr("class", "axis " + this.type + "-axis " + this.name);
-        // .attr("transform", "translate(" + this.axisPosition().join(",") + ")")
         // Background rect for component hover
         this.el.append("svg:rect")
             .attr("class", styles.rect);
         // Border
         this.el.append("svg:line")
-            .attr("class", styles.border)
-            .call(d3_utils_1.setLineAttributes, { x1: 0, x2: 0, y1: 0, y2: 0 });
+            .attr("class", styles.border);
         this.updateDraw();
         this.drawn = true;
     };
@@ -128,12 +126,10 @@ var AbstractAxis = /** @class */ (function () {
             .call(d3_utils_1.setTextAttributes, fp_1.defaults(attributes)({ opacity: 1e6 }))
             .remove();
         // Axis position
-        this.el.transition()
-            .duration(duration)
-            .ease(d3_ease_1.easeLinear)
+        this.el
             .attr("transform", "translate(" + this.axisPosition().join(",") + ")");
         this.el.select("line." + styles.border)
-            .call(d3_utils_1.setLineAttributes, this.border(), duration);
+            .call(d3_utils_1.setLineAttributes, this.border());
         this.stateWriter(["drawn"], true);
         this.stateWriter(["dimensions"], this.axisDimensions());
     };

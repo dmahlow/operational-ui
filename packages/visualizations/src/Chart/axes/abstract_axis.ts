@@ -115,7 +115,6 @@ abstract class AbstractAxis {
     // svg element
     this.el = this.elGroup.append("svg:g")
       .attr("class", "axis " + this.type + "-axis " + this.name)
-      // .attr("transform", "translate(" + this.axisPosition().join(",") + ")")
 
     // Background rect for component hover
     this.el.append("svg:rect")
@@ -124,7 +123,6 @@ abstract class AbstractAxis {
     // Border
     this.el.append("svg:line")
       .attr("class", styles.border)
-      .call(setLineAttributes, { x1: 0, x2: 0, y1: 0, y2: 0 })
 
     this.updateDraw()
 
@@ -175,13 +173,11 @@ abstract class AbstractAxis {
       .remove()
 
     // Axis position
-    this.el.transition()
-      .duration(duration)
-      .ease(easeLinear)
+    this.el
       .attr("transform", "translate(" + this.axisPosition().join(",") + ")")
 
     this.el.select(`line.${styles.border}`)
-      .call(setLineAttributes, this.border(), duration)
+      .call(setLineAttributes, this.border())
 
     this.stateWriter(["drawn"], true)
     this.stateWriter(["dimensions"], this.axisDimensions())
