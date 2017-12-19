@@ -1,4 +1,5 @@
-contiamo-ui-components exports a wide range of granular components fulfilling a wide range of purposes. To help using them successfully, this page describes the general API philosophy, and outlines common code patterns that all components adhere to.
+export default `
+Operational UI exports a wide range of granular components fulfilling a wide range of purposes. To help using them successfully, this page describes the general API philosophy, and outlines common code patterns that all components adhere to.
 
 
 ## Stateless and controlled
@@ -31,12 +32,12 @@ This library heavily opts for the latter, keeping content more customizable, and
 
 Most components rely on a theme object, the use of which the library mandates, as follows:
 
-    import { contiamoTheme, Button } from "contiamo-ui-components"
+    import { operationalTheme, Button } from "@operational/components"
     import glamorous, { ThemeProvider } from "glamorous"
 
-    render(<ThemeProvider theme={contiamoTheme}><Button>Hello</Button></ThemeProvider>
+    render(<ThemeProvider theme={operationalTheme}><Button>Hello</Button></ThemeProvider>
 
-You can of course, define your own theme based on the contiamoTheme structure. Since the theme structure still changes significantly, more detailed docs will be arriving later.
+You can of course, define your own theme based on the operationalTheme structure. Since the theme structure still changes significantly, more detailed docs will be arriving later.
 
 ## Overrides
 
@@ -55,3 +56,4 @@ Note that inline styles passed in through the *style* prop are ignored in order 
 Components tap all the way into advanced features of its significant dependencies, React and glamorous. Custom-defined CSS class names are avoided as much as possible over granular, parameterized styled components. Several components rely on React's event delegation, child manipulation through *React.Children.map*, and there are plans underway to introduce error boundaries and portals.
 
 But that doesn't mean the project has to be used this way: you can attach custom class names and style overrides as you see fit, integrate with third-party libraries, and provide custom React content inside components. The hashed class names inside components will make sure you can plug other projects and technologies in and stay conflict-free. 
+`

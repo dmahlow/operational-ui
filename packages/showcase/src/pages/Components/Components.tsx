@@ -29,7 +29,7 @@ import Progress from "./Progress/Progress"
 import Tabs from "./Tabs/Tabs"
 import Timeline from "./Timeline/Timeline"
 import Uploads from "./Uploads/Uploads"
-import * as introContent from "./intro.docs.md"
+import introContent from "./intro.docs"
 
 const SidebarWithRouter = withRouter(Sidebar as any)
 

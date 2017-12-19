@@ -7,7 +7,7 @@ import PageContent from "../../components/PageContent/PageContent"
 import Sidebar, { ISidebarLink } from "../../components/Sidebar/Sidebar"
 import StaticContent from "../../components/StaticContent/StaticContent"
 import Filters from "./Filters/Filters"
-import * as introContent from "./intro.docs.md"
+import introContent from "./intro.docs"
 
 const SidebarWithRouter = withRouter(Sidebar as any)
 

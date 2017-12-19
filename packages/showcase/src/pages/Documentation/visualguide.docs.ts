@@ -1,4 +1,5 @@
-The *contiamo-ui-components* package holds a set of opinionated presentational components, composed components and data visualizations that implement a visual style well-suited for operational interfaces.
+export default `
+\`@operational/components\` package holds a set of opinionated presentational components, composed components and data visualizations that implement a visual style well-suited for operational interfaces.
 
 These interfaces assume regular use and familiarity by operatives. They are compact, flat, with little color, achieving contrast and hierarchy with subtle touches of color, spacing and font weight.
 
@@ -7,3 +8,4 @@ These interfaces assume regular use and familiarity by operatives. They are comp
 * flat appearance with light shadows adding a touch of depth.
 * light grey background with all content white, light-shadowed cards arranged in a grid.
 * mostly the same font size. To indicate emphasis and hierarchy, prefer bolder and darker over bigger.
+`
